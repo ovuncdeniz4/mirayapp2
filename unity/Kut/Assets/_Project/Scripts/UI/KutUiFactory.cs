@@ -85,6 +85,22 @@ namespace Kut.Unity.UI
       return go.GetComponent<Button>();
     }
 
+    public static Image SpriteSlot(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
+    {
+      var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+      go.transform.SetParent(parent, false);
+      var rt = go.GetComponent<RectTransform>();
+      rt.anchorMin = anchorMin;
+      rt.anchorMax = anchorMax;
+      rt.offsetMin = Vector2.zero;
+      rt.offsetMax = Vector2.zero;
+      var img = go.GetComponent<Image>();
+      img.color = Color.white;
+      img.preserveAspect = true;
+      img.raycastTarget = false;
+      return img;
+    }
+
     public static Text Body(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, int size = 32)
     {
       var go = new GameObject(name, typeof(RectTransform), typeof(Text));

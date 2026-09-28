@@ -55,7 +55,7 @@ Turkish copy is authoritative in [`ux-ui-spec.md`](ux-ui-spec.md).
 
 ## Spirit animals (totem icons)
 
-Placeholder: colored silhouette per `animalId` until final art.
+Final portrait sprites: `Resources/Art/Animals/animal_{id}` per [`ART_DIRECTION.md`](ART_DIRECTION.md). Token colors remain fallback if a sprite is missing.
 
 | id | Display TR | Accent |
 |----|------------|--------|

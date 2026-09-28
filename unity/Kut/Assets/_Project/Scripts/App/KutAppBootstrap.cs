@@ -33,6 +33,10 @@ namespace Kut.Unity.App
     private GameObject _totemPanel = null!;
     private GameObject _collectionPanel = null!;
 
+    private Image? _animalPortrait;
+    private Image? _totemPortrait;
+    private Image? _revealPortrait;
+
     private InputField? _monthInput;
     private InputField? _dayInput;
     private Text? _revealText;
@@ -115,8 +119,10 @@ namespace Kut.Unity.App
     {
       _onboardingRevealPanel = KutUiFactory.Panel(root, "S01b_Reveal");
       KutUiFactory.Title(_onboardingRevealPanel.transform, "Ruh hayvanın", 48);
+      _revealPortrait = KutUiFactory.SpriteSlot(_onboardingRevealPanel.transform, "RevealPortrait",
+        new Vector2(0.32f, 0.52f), new Vector2(0.68f, 0.78f));
       _revealText = KutUiFactory.Body(_onboardingRevealPanel.transform, "Reveal",
-        new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.55f), 40);
+        new Vector2(0.08f, 0.28f), new Vector2(0.92f, 0.48f), 40);
       _revealText.alignment = TextAnchor.MiddleCenter;
       KutUiFactory.PrimaryButton(_onboardingRevealPanel.transform, "Ana ekrana git",
         new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f)).onClick.AddListener(() =>
@@ -201,8 +207,10 @@ namespace Kut.Unity.App
     {
       _animalPanel = KutUiFactory.Panel(root, "S05_Animal");
       KutUiFactory.Title(_animalPanel.transform, "Hayvan", 48);
+      _animalPortrait = KutUiFactory.SpriteSlot(_animalPanel.transform, "AnimalPortrait",
+        new Vector2(0.28f, 0.48f), new Vector2(0.72f, 0.82f));
       var body = KutUiFactory.Body(_animalPanel.transform, "Body",
-        new Vector2(0.08f, 0.3f), new Vector2(0.92f, 0.7f));
+        new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.46f));
       body.name = "AnimalBody";
       KutUiFactory.PrimaryButton(_animalPanel.transform, "Geri",
         new Vector2(0.2f, 0.08f), new Vector2(0.8f, 0.16f)).onClick.AddListener(BackHome);
@@ -212,8 +220,10 @@ namespace Kut.Unity.App
     {
       _totemPanel = KutUiFactory.Panel(root, "S06_Totem");
       KutUiFactory.Title(_totemPanel.transform, "Totem", 48);
+      _totemPortrait = KutUiFactory.SpriteSlot(_totemPanel.transform, "TotemPortrait",
+        new Vector2(0.25f, 0.38f), new Vector2(0.75f, 0.82f));
       KutUiFactory.Body(_totemPanel.transform, "Body",
-        new Vector2(0.08f, 0.25f), new Vector2(0.92f, 0.75f)).name = "TotemBody";
+        new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.36f)).name = "TotemBody";
       KutUiFactory.PrimaryButton(_totemPanel.transform, "Geri",
         new Vector2(0.2f, 0.08f), new Vector2(0.8f, 0.16f)).onClick.AddListener(BackHome);
     }
@@ -245,6 +255,7 @@ namespace Kut.Unity.App
       GameShell.CompleteOnboarding(_save, month, day);
       SaveStore.Save(_savePath, _save);
       _revealText!.text = AnimalAssignment.DisplayNameTr(_save.AnimalId);
+      ApplyAnimalPortrait(_revealPortrait, _save.AnimalId);
       HideAll();
       _onboardingRevealPanel.SetActive(true);
     }
@@ -489,11 +500,12 @@ namespace Kut.Unity.App
     {
       HideAll();
       var body = _animalPanel.transform.Find("AnimalBody")?.GetComponent<Text>();
+      ApplyAnimalPortrait(_animalPortrait, _save.AnimalId);
       if (body != null)
       {
         body.text =
           $"Kalıcı ruh eşleşmen: {AnimalAssignment.DisplayNameTr(_save.AnimalId)}\n\n{AnimalBonus.DescriptionTr(_save.AnimalId)}";
-        body.color = KutDesignTokens.AnimalAccent(_save.AnimalId);
+        body.color = KutDesignTokens.TextPrimary;
       }
 
       _animalPanel.SetActive(true);
@@ -509,6 +521,8 @@ namespace Kut.Unity.App
 
       HideAll();
       var body = _totemPanel.transform.Find("TotemBody")?.GetComponent<Text>();
+      var stage = _save.TotemTier < 1 ? 1 : _save.TotemTier;
+      ApplyTotemPortrait(_totemPortrait, stage);
       if (body != null)
       {
         body.text =
@@ -552,6 +566,30 @@ namespace Kut.Unity.App
     }
 
     private void ShowToast(string msg) => Debug.Log($"[Toast] {msg}");
+
+    private static void ApplyAnimalPortrait(Image? target, string animalId)
+    {
+      if (target == null)
+      {
+        return;
+      }
+
+      var sprite = KutArtCatalog.TryAnimal(animalId);
+      target.sprite = sprite;
+      target.enabled = sprite != null;
+    }
+
+    private static void ApplyTotemPortrait(Image? target, int stage)
+    {
+      if (target == null)
+      {
+        return;
+      }
+
+      var sprite = KutArtCatalog.TryTotemStage(stage);
+      target.sprite = sprite;
+      target.enabled = sprite != null;
+    }
 
     private static InputField CreateInput(Transform parent, Vector2 min, Vector2 max)
     {

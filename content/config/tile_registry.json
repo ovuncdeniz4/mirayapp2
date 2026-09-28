@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "spawnId": "earth_moss",
+      "element": "earth",
+      "matchGroup": "earth",
+      "spriteId": "tile_earth_moss",
+      "silhouette": "rounded_hex_leaf",
+      "hex": "#4CAF6A"
+    },
+    {
+      "spawnId": "water_drop",
+      "element": "water",
+      "matchGroup": "water",
+      "spriteId": "tile_water_drop",
+      "silhouette": "teardrop_ripple",
+      "hex": "#3B7BDB"
+    },
+    {
+      "spawnId": "fire_ember",
+      "element": "fire",
+      "matchGroup": "fire",
+      "spriteId": "tile_fire_ember",
+      "silhouette": "ember_flame",
+      "hex": "#E85D3B"
+    },
+    {
+      "spawnId": "wind_gust",
+      "planTileId": "air_wisp",
+      "element": "air",
+      "matchGroup": "wind",
+      "spriteId": "tile_air_wisp",
+      "silhouette": "air_swirl",
+      "hex": "#7EC8E3"
+    },
+    {
+      "spawnId": "metal_ingot",
+      "element": "metal",
+      "matchGroup": "metal",
+      "spriteId": "tile_metal_ingot",
+      "silhouette": "ingot_seam",
+      "hex": "#9AA3AD",
+      "chapterGate": 3
+    }
+  ],
+  "specials": [
+    {
+      "specialType": "WindChime",
+      "spriteId": "special_wind_chime",
+      "hex": "#D4AF37"
+    },
+    {
+      "specialType": "ShamanDrum",
+      "resonanceElement": "earth",
+      "spriteId": "special_shaman_drum_earth",
+      "hex": "#4CAF6A"
+    },
+    {
+      "specialType": "ShamanDrum",
+      "resonanceElement": "water",
+      "spriteId": "special_shaman_drum_water",
+      "hex": "#3B7BDB"
+    },
+    {
+      "specialType": "FireBomb",
+      "spriteId": "special_fire_bomb",
+      "hex": "#FF6B2C"
+    }
+  ],
+  "obstacles": [
+    { "type": "mud", "spriteId": "obstacle_mud", "hex": "#6B4A2E" },
+    { "type": "vine", "spriteId": "obstacle_vine", "hex": "#2E7D4A" },
+    { "type": "stone", "spriteId": "obstacle_stone", "hex": "#5C5C66" }
+  ]
+}

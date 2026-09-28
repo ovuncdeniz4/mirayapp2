@@ -72,7 +72,7 @@ namespace Kut.Unity.Presentation
         {
           var pos = new GridPos(x, y);
           var cell = state.GetCell(pos);
-          _cells[idx].GetComponent<Image>().color = ColorForCell(cell);
+          ApplyCellVisual(_cells[idx].GetComponent<Image>(), cell);
           var highlight = _selected.HasValue && _selected.Value.Equals(pos);
           _cells[idx].GetComponent<Outline>().enabled = highlight;
           idx++;
@@ -134,6 +134,35 @@ namespace Kut.Unity.Presentation
 
     private static bool IsAdjacent(GridPos a, GridPos b) =>
       (Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y)) == 1;
+
+    private static void ApplyCellVisual(Image img, Cell cell)
+    {
+      Sprite? sprite = null;
+      switch (cell.Kind)
+      {
+        case CellKind.Tile:
+          var tile = cell.Tile!;
+          sprite = KutArtCatalog.TrySpecial(tile) ?? KutArtCatalog.TryTile(tile.TileId);
+          break;
+        case CellKind.Obstacle when cell.Obstacle != null:
+          sprite = KutArtCatalog.TryObstacle(cell.Obstacle.Type);
+          break;
+        case CellKind.Blocker:
+          sprite = KutArtCatalog.TryBlocker();
+          break;
+      }
+
+      if (sprite != null)
+      {
+        img.sprite = sprite;
+        img.color = Color.white;
+        img.preserveAspect = true;
+        return;
+      }
+
+      img.sprite = null;
+      img.color = ColorForCell(cell);
+    }
 
     private static Color ColorForCell(Cell cell)
     {

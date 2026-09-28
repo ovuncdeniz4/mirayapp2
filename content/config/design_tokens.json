@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "spacingUnit": 4,
+  "colors": {
+    "backgroundDeep": "#1A1520",
+    "panelSurface": "#2A2235",
+    "accentGold": "#C9A227",
+    "textPrimary": "#F5F0E8",
+    "textMuted": "#A89FB0",
+    "danger": "#E05252",
+    "earth": "#4CAF6A",
+    "water": "#3B7BDB",
+    "fire": "#E85D3B",
+    "air": "#7EC8E3",
+    "mud": "#6B4A2E",
+    "vine": "#2E7D4A",
+    "stone": "#5C5C66",
+    "windChime": "#D4AF37",
+    "shamanDrum": "#9B3A6E",
+    "fireBomb": "#FF6B2C"
+  },
+  "typography": {
+    "bodyFont": "Noto Sans",
+    "displaySerif": "reserved_for_logo_only",
+    "titleSp": 48,
+    "bodySp": 32,
+    "hudSp": 36,
+    "disclaimerSp": 24
+  },
+  "motionMs": {
+    "swap": 140,
+    "invalidSwap": 160,
+    "matchFlash": 80,
+    "tileDestroyMin": 120,
+    "tileDestroyMax": 200,
+    "gravityPerCell": 45,
+    "cascadeGap": 60,
+    "specialCreate": 200,
+    "windChimeActivate": 250,
+    "fireBombActivate": 300,
+    "shamanDrumActivate": 350
+  }
+}
