@@ -186,6 +186,11 @@ namespace Kut.Unity.App
 
       var boardHost = new GameObject("BoardHost", typeof(RectTransform));
       boardHost.transform.SetParent(_levelPanel.transform, false);
+      var bhRt = boardHost.GetComponent<RectTransform>();
+      bhRt.anchorMin = new Vector2(0, 0.12f);
+      bhRt.anchorMax = new Vector2(1, 0.88f);
+      bhRt.offsetMin = Vector2.zero;
+      bhRt.offsetMax = Vector2.zero;
       _boardGrid = boardHost.AddComponent<BoardGridUi>();
 
       KutUiFactory.PrimaryButton(_levelPanel.transform, "Geri",
