@@ -1,0 +1,11 @@
+{
+  "id": "level_016",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 25,
+  "seed": 206,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
+  "enableWindChime": true,
+  "enableSpecialCreation": true,
+  "objectives": [{ "type": "cascade_depth", "target": 3 }]
+}

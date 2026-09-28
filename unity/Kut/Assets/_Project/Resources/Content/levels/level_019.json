@@ -1,0 +1,14 @@
+{
+  "id": "level_019",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 30,
+  "seed": 209,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
+  "enableShamanDrum": true,
+  "enableSpecialCreation": true,
+  "objectives": [
+    { "type": "create_special", "target": 1, "special": "shaman_drum" },
+    { "type": "activate_special", "target": 1, "special": "shaman_drum" }
+  ]
+}

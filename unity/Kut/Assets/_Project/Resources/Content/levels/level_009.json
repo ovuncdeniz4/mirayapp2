@@ -1,0 +1,14 @@
+{
+  "id": "level_009",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 26,
+  "seed": 109,
+  "enableSpecialCreation": true,
+  "mudCells": [{ "x": 3, "y": 3, "layers": 1 }, { "x": 4, "y": 4, "layers": 1 }],
+  "vineCells": [{ "x": 0, "y": 2, "layers": 1 }, { "x": 7, "y": 2, "layers": 1 }],
+  "objectives": [
+    { "type": "collect_element", "target": 18, "element": "earth" },
+    { "type": "collect_element", "target": 18, "element": "water" }
+  ]
+}

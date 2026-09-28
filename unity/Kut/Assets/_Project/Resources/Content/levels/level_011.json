@@ -1,0 +1,10 @@
+{
+  "id": "level_011",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 22,
+  "seed": 201,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember"],
+  "enableSpecialCreation": false,
+  "objectives": [{ "type": "make_matches", "target": 10 }]
+}

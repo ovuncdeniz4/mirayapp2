@@ -1,0 +1,15 @@
+{
+  "id": "level_006",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 24,
+  "seed": 106,
+  "enableSpecialCreation": false,
+  "stoneCells": [
+    { "x": 0, "y": 7 },
+    { "x": 1, "y": 7 },
+    { "x": 2, "y": 7 },
+    { "x": 3, "y": 7 }
+  ],
+  "objectives": [{ "type": "collect_element", "target": 22, "element": "water" }]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "level_015",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 26,
+  "seed": 205,
+  "enableFireBomb": true,
+  "enableSpecialCreation": true,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember"],
+  "mudCells": [{ "x": 3, "y": 3, "layers": 2 }, { "x": 4, "y": 3, "layers": 1 }],
+  "objectives": [
+    { "type": "clear_obstacle", "target": 2, "obstacle": "mud" },
+    { "type": "collect_element", "target": 12, "element": "fire" }
+  ]
+}
