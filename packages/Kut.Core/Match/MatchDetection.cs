@@ -114,6 +114,50 @@ namespace Kut.Core.Match
       return false;
     }
 
+    public static bool TryFindTwoByTwo(BoardState board, HashSet<GridPos> cluster, out GridPos anchor)
+    {
+      anchor = default;
+      foreach (var pos in cluster)
+      {
+        if (!TrySquareAt(board, cluster, pos, out anchor))
+        {
+          continue;
+        }
+
+        return true;
+      }
+
+      return false;
+    }
+
+    private static bool TrySquareAt(BoardState board, HashSet<GridPos> cluster, GridPos topLeft, out GridPos anchor)
+    {
+      anchor = topLeft;
+      var group = board.GetMatchGroup(topLeft);
+      if (group == null)
+      {
+        return false;
+      }
+
+      var cells = new[]
+      {
+        topLeft,
+        topLeft.Offset(1, 0),
+        topLeft.Offset(0, 1),
+        topLeft.Offset(1, 1)
+      };
+
+      foreach (var c in cells)
+      {
+        if (!board.Size.Contains(c) || !cluster.Contains(c) || board.GetMatchGroup(c) != group)
+        {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
     private static bool IsStraightRun(
       BoardState board,
       HashSet<GridPos> cluster,

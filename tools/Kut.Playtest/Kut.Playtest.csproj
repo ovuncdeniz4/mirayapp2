@@ -11,5 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\content\levels\*.json" Link="content\levels\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\content\chapters.json" Link="content\chapters.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\content\collection\catalog.json" Link="content\collection\catalog.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

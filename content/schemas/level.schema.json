@@ -20,11 +20,15 @@
     "seed": { "type": "integer" },
     "spawnTable": {
       "type": "array",
-      "items": { "type": "string", "enum": ["earth_moss", "water_drop"] },
+      "items": {
+        "type": "string",
+        "enum": ["earth_moss", "water_drop", "fire_ember", "wind_gust"]
+      },
       "minItems": 1
     },
     "enableWindChime": { "type": "boolean" },
     "enableShamanDrum": { "type": "boolean" },
+    "enableFireBomb": { "type": "boolean" },
     "enableSpecialCreation": { "type": "boolean" },
     "mudCells": { "$ref": "#/$defs/layeredCells" },
     "vineCells": { "$ref": "#/$defs/layeredCells" },
@@ -75,9 +79,9 @@
           ]
         },
         "target": { "type": "integer", "minimum": 1 },
-        "element": { "type": "string", "enum": ["earth", "water"] },
+        "element": { "type": "string", "enum": ["earth", "water", "fire", "wind"] },
         "obstacle": { "type": "string", "enum": ["mud", "vine"] },
-        "special": { "type": "string", "enum": ["wind_chime", "shaman_drum"] }
+        "special": { "type": "string", "enum": ["wind_chime", "shaman_drum", "fire_bomb"] }
       }
     }
   }

@@ -4,6 +4,7 @@ using System.Linq;
 using Kut.Core.Animals;
 using Kut.Core.Commands;
 using Kut.Core.Levels;
+using Kut.Core.Meta;
 using Kut.Core.Playtest;
 using Kut.Core.Save;
 
@@ -11,16 +12,13 @@ namespace Kut.Playtest
 {
   internal static class VerticalSliceApp
   {
-    private static readonly string[] LevelIds =
-    {
-      "level_001", "level_002", "level_003", "level_004", "level_005",
-      "level_006", "level_007", "level_008", "level_009", "level_010"
-    };
-
     public static int Run(string[] args)
     {
       var savePath = ResolveSavePath(args);
-      var contentDir = ResolveContentDir();
+      var contentRoot = ResolveContentRoot();
+      var levelsDir = Path.Combine(contentRoot, "levels");
+      var chapters = ChapterCatalog.LoadFromFile(Path.Combine(contentRoot, "chapters.json"));
+      var collection = CollectionCatalog.LoadFromFile(Path.Combine(contentRoot, "collection", "catalog.json"));
       var save = SaveStore.Load(savePath);
 
       if (!save.OnboardingComplete)
@@ -33,10 +31,16 @@ namespace Kut.Playtest
         Console.WriteLine();
         Console.WriteLine("=== KUT — Ana Ekran ===");
         Console.WriteLine($"Ruh hayvanın: {AnimalAssignment.DisplayNameTr(save.AnimalId)} ({save.AnimalId})");
-        Console.WriteLine($"Harita: seviye 1–{save.HighestUnlockedLevel} açık");
-        if (save.TotemTabUnlocked)
+        Console.WriteLine($"Bonus: {AnimalBonus.DescriptionTr(save.AnimalId)}");
+        Console.WriteLine($"İlerleme: seviye 1–{save.HighestUnlockedLevel} / {chapters.AllLevelIds.Count} açık");
+        if (save.TotemTier > 0)
         {
-          Console.WriteLine("(Totem ve Koleksiyon açıldı — Bölüm 1 tamamlandı)");
+          Console.WriteLine($"Totem uyanışı: katman {save.TotemTier}");
+        }
+
+        if (save.Chapter2Complete)
+        {
+          Console.WriteLine("Bölüm 2 tamamlandı — Beş Element mührü toplandı.");
         }
 
         Console.WriteLine("[1] Devam et  [2] Harita  [3] Hayvan  [4] Çıkış");
@@ -51,21 +55,23 @@ namespace Kut.Playtest
         {
           case "1":
           case "2":
-            var levelId = LevelIds[Math.Min(save.HighestUnlockedLevel, LevelIds.Length) - 1];
+            var levelId = chapters.LevelIdAtGlobalIndex(Math.Min(save.HighestUnlockedLevel, chapters.AllLevelIds.Count))
+                          ?? chapters.AllLevelIds[0];
             if (choice == "2")
             {
-              ShowMap(save);
+              ShowMap(save, chapters);
               Console.Write($"Oyna (1-{save.HighestUnlockedLevel}): ");
               if (int.TryParse(Console.ReadLine(), out var pick) && pick >= 1 && pick <= save.HighestUnlockedLevel)
               {
-                levelId = LevelIds[pick - 1];
+                levelId = chapters.LevelIdAtGlobalIndex(pick) ?? levelId;
               }
             }
 
-            PlayLevel(Path.Combine(contentDir, levelId + ".json"), save, savePath);
+            PlayLevel(Path.Combine(levelsDir, levelId + ".json"), save, savePath, chapters, collection);
             break;
           case "3":
             Console.WriteLine($"Kalıcı ruh eşleşmen: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
+            Console.WriteLine($"Savaş bonusu: {AnimalBonus.DescriptionTr(save.AnimalId)}");
             break;
           case "5":
             if (save.TotemTabUnlocked)
@@ -74,18 +80,18 @@ namespace Kut.Playtest
             }
             else
             {
-              Console.WriteLine("Totem henüz uyanmadı (level 10).");
+              Console.WriteLine("Totem henüz uyanmadı (Bölüm 1, seviye 10).");
             }
 
             break;
           case "6":
             if (save.CollectionTabUnlocked)
             {
-              ShowCollectionTab(save);
+              ShowCollectionTab(save, collection, chapters);
             }
             else
             {
-              Console.WriteLine("Koleksiyon henüz açılmadı (level 10).");
+              Console.WriteLine("Koleksiyon henüz açılmadı (Bölüm 1, seviye 10).");
             }
 
             break;
@@ -103,9 +109,17 @@ namespace Kut.Playtest
       Console.WriteLine("=== KUT — Ruh Töreni ===");
       Console.WriteLine("(Kurgusal oyun sistemi — tarihsel şaman geleneği değildir.)");
       Console.Write("Doğum ayın (1-12): ");
-      _ = int.TryParse(Console.ReadLine(), out var month);
+      if (!int.TryParse(Console.ReadLine(), out var month))
+      {
+        month = 1;
+      }
+
       Console.Write("Doğum günün (1-31): ");
-      _ = int.TryParse(Console.ReadLine(), out var day);
+      if (!int.TryParse(Console.ReadLine(), out var day))
+      {
+        day = 1;
+      }
+
       save.AnimalId = AnimalAssignment.Assign(month, day);
       save.AnimalAssignmentVersion = 1;
       save.OnboardingComplete = true;
@@ -114,51 +128,79 @@ namespace Kut.Playtest
       Console.WriteLine($"Ruh hayvanın: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
     }
 
-    private static void ShowMap(SaveData save)
+    private static void ShowMap(SaveData save, ChapterCatalog chapters)
     {
-      for (var i = 0; i < LevelIds.Length; i++)
+      var global = 0;
+      foreach (var chapter in chapters.Chapters)
       {
-        var locked = i + 1 > save.HighestUnlockedLevel;
-        var done = save.Levels.TryGetValue(LevelIds[i], out var entry) && entry.Completed;
-        var mark = done ? "✓" : locked ? "🔒" : "→";
-        Console.WriteLine($"  {mark} {i + 1}. {LevelIds[i]}");
+        var accessible = MetaProgression.CanAccessChapter(chapter, save, chapters);
+        Console.WriteLine($"— {chapter.TitleTr} {(accessible ? "" : "(kilitli)")}");
+        if (!accessible)
+        {
+          global += chapter.Levels.Count;
+          continue;
+        }
+
+        foreach (var levelId in chapter.Levels)
+        {
+          global++;
+          var locked = global > save.HighestUnlockedLevel;
+          var done = save.Levels.TryGetValue(levelId, out var entry) && entry.Completed;
+          var mark = done ? "✓" : locked ? "🔒" : "→";
+          Console.WriteLine($"  {mark} {global,2}. {levelId}");
+        }
       }
     }
 
     private static void ShowTotemTab(SaveData save)
     {
-      Console.WriteLine("=== Totem (CLI stub) ===");
-      Console.WriteLine($"Ruh hayvanın totemi: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
-      Console.WriteLine("Bölüm 1 sonrası totem uyanışı kaydedildi — Unity’de görsel totem burada.");
+      Console.WriteLine("=== Totem ===");
+      Console.WriteLine($"Hayvan: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
+      Console.WriteLine($"Totem katmanı: {save.TotemTier} (Bölüm 1 → 1, Bölüm 2 → 2)");
+      Console.WriteLine("Ruh yolu: Toprak/Su (B1) → Ateş/Rüzgar (B2) → Ruh (meta, ileride).");
     }
 
-    private static void ShowCollectionTab(SaveData save)
+    private static void ShowCollectionTab(SaveData save, CollectionCatalog catalog, ChapterCatalog chapters)
     {
-      Console.WriteLine("=== Koleksiyon (CLI stub) ===");
+      Console.WriteLine("=== Koleksiyon ===");
       var completed = save.Levels.Count(kv => kv.Value.Completed);
-      Console.WriteLine($"Tamamlanan seviyeler: {completed}/{LevelIds.Length}");
-      foreach (var id in LevelIds)
+      Console.WriteLine($"Tamamlanan seviyeler: {completed}/{chapters.AllLevelIds.Count}");
+      Console.WriteLine($"Relikler: {save.UnlockedCollectionIds.Count}/{catalog.Items.Count}");
+      foreach (var item in catalog.Items)
       {
-        if (save.Levels.TryGetValue(id, out var entry) && entry.Completed)
-        {
-          Console.WriteLine($"  · {id}");
-        }
+        var owned = save.UnlockedCollectionIds.Contains(item.Id);
+        Console.WriteLine($"  {(owned ? "★" : "·")} [{item.Category}] {item.TitleTr}");
       }
-
-      Console.WriteLine("(Element kartları ve relic’ler Unity koleksiyon ekranında.)");
     }
 
-    private static void PlayLevel(string path, SaveData save, string savePath)
+    private static void PlayLevel(
+      string path,
+      SaveData save,
+      string savePath,
+      ChapterCatalog chapters,
+      CollectionCatalog collection)
     {
       var def = LevelLoader.LoadFromFile(path);
       var session = LevelSession.FromDefinition(def);
-      Console.WriteLine($"--- {def.Id} | moves: {session.Engine.MovesRemaining} ---");
+      var bonus = AnimalBonus.BonusMovesAtLevelStart(save.AnimalId);
+      if (bonus > 0)
+      {
+        session.Engine.AddBonusMoves(bonus);
+      }
+
+      Console.WriteLine($"--- {def.Id} (Bölüm {def.Chapter}) | moves: {session.Engine.MovesRemaining} ---");
+      if (bonus > 0)
+      {
+        Console.WriteLine($"(Hayvan bonusu +{bonus} hamle)");
+      }
+
       PrintObjectives(session);
       Console.WriteLine(BoardAsciiRenderer.Render(session.Engine.State));
+      Console.WriteLine("Legend: E W F A M V C D B # ·");
 
       while (session.Outcome == LevelOutcome.InProgress)
       {
-        Console.Write("swap x1 y1 x2 y2 | activate x y | board | quit > ");
+        Console.Write($"[{session.Engine.MovesRemaining} hamle] swap | activate | board | objectives | quit > ");
         var line = Console.ReadLine();
         if (line == null || line.StartsWith("quit", StringComparison.OrdinalIgnoreCase))
         {
@@ -171,6 +213,12 @@ namespace Kut.Playtest
           continue;
         }
 
+        if (line.StartsWith("objectives", StringComparison.OrdinalIgnoreCase))
+        {
+          PrintObjectives(session);
+          continue;
+        }
+
         var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 5 && parts[0] == "swap" &&
             int.TryParse(parts[1], out var x1) && int.TryParse(parts[2], out var y1) &&
@@ -179,7 +227,6 @@ namespace Kut.Playtest
           session.Submit(new SwapCommand(new Kut.Core.Board.GridPos(x1, y1), new Kut.Core.Board.GridPos(x2, y2)));
           PrintObjectives(session);
           Console.WriteLine(BoardAsciiRenderer.Render(session.Engine.State));
-          Console.WriteLine($"moves: {session.Engine.MovesRemaining}");
           continue;
         }
 
@@ -189,25 +236,21 @@ namespace Kut.Playtest
           session.Submit(new ActivateSpecialCommand(new Kut.Core.Board.GridPos(ax, ay)));
           PrintObjectives(session);
           Console.WriteLine(BoardAsciiRenderer.Render(session.Engine.State));
-          Console.WriteLine($"moves: {session.Engine.MovesRemaining}");
         }
       }
 
       if (session.Outcome == LevelOutcome.Victory)
       {
         Console.WriteLine("*** ZAFER ***");
-        save.Levels[def.Id] = new LevelSaveEntry { Completed = true };
-        var idx = Array.IndexOf(LevelIds, def.Id);
-        if (idx + 1 < LevelIds.Length && save.HighestUnlockedLevel < idx + 2)
-        {
-          save.HighestUnlockedLevel = idx + 2;
-        }
-
+        MetaProgression.ApplyLevelVictory(save, chapters, collection, def.Id);
         if (def.Id == "level_010")
         {
-          save.TotemTabUnlocked = true;
-          save.CollectionTabUnlocked = true;
-          Console.WriteLine("*** Totem uyanışı — meta sekmeleri açıldı (CLI) ***");
+          Console.WriteLine("*** Totem ve Koleksiyon sekmeleri açıldı ***");
+        }
+
+        if (def.Id == "level_020")
+        {
+          Console.WriteLine("*** Bölüm 2 tamamlandı — Totem katmanı 2 ***");
         }
 
         SaveStore.Save(savePath, save);
@@ -223,7 +266,8 @@ namespace Kut.Playtest
       for (var i = 0; i < session.Objectives.Definitions.Count; i++)
       {
         var def = session.Objectives.Definitions[i];
-        Console.WriteLine($"  objective {def.Type}: {session.Objectives.GetProgress(i)}/{def.Target}");
+        var done = session.Objectives.IsObjectiveComplete(i) ? "✓" : " ";
+        Console.WriteLine($"  [{done}] {def.Type}: {session.Objectives.GetProgress(i)}/{def.Target}");
       }
     }
 
@@ -238,15 +282,15 @@ namespace Kut.Playtest
       return Path.Combine(Environment.CurrentDirectory, "kut_save.json");
     }
 
-    private static string ResolveContentDir()
+    private static string ResolveContentRoot()
     {
-      var local = Path.Combine(AppContext.BaseDirectory, "content", "levels");
-      if (Directory.Exists(local))
+      var local = Path.Combine(AppContext.BaseDirectory, "content");
+      if (Directory.Exists(Path.Combine(local, "levels")))
       {
         return local;
       }
 
-      return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "content", "levels"));
+      return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "content"));
     }
   }
 }

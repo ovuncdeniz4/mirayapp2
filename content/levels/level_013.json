@@ -1,0 +1,16 @@
+{
+  "id": "level_013",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 26,
+  "seed": 203,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember"],
+  "enableWindChime": false,
+  "enableShamanDrum": false,
+  "enableFireBomb": true,
+  "enableSpecialCreation": true,
+  "objectives": [
+    { "type": "create_special", "target": 1, "special": "fire_bomb" },
+    { "type": "activate_special", "target": 1, "special": "fire_bomb" }
+  ]
+}

@@ -141,6 +141,10 @@ namespace Kut.Core.Levels
           {
             errors.Add($"{def.Id}: collect_element requires element");
           }
+          else if (obj.Element is not ("earth" or "water" or "fire" or "wind"))
+          {
+            errors.Add($"{def.Id}: collect_element element must be earth|water|fire|wind");
+          }
 
           break;
         case ObjectiveType.ClearObstacle:
@@ -152,9 +156,9 @@ namespace Kut.Core.Levels
           break;
         case ObjectiveType.CreateSpecial:
         case ObjectiveType.ActivateSpecial:
-          if (obj.Special != "wind_chime" && obj.Special != "shaman_drum")
+          if (obj.Special != "wind_chime" && obj.Special != "shaman_drum" && obj.Special != "fire_bomb")
           {
-            errors.Add($"{def.Id}: special objectives require wind_chime|shaman_drum");
+            errors.Add($"{def.Id}: special objectives require wind_chime|shaman_drum|fire_bomb");
           }
 
           break;

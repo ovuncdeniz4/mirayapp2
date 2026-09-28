@@ -182,6 +182,19 @@ namespace Kut.Core.GameEvents
     public string TileId { get; }
   }
 
+  public sealed class AreaClearEvent : GameEvent
+  {
+    public AreaClearEvent(GridPos center, int radius)
+    {
+      EventType = "area_clear";
+      Center = center;
+      Radius = radius;
+    }
+
+    public GridPos Center { get; }
+    public int Radius { get; }
+  }
+
   public sealed class CascadeEndedEvent : GameEvent
   {
     public CascadeEndedEvent(int chainIndex)
@@ -191,5 +204,27 @@ namespace Kut.Core.GameEvents
     }
 
     public int ChainIndex { get; }
+  }
+
+  public sealed class CollectionItemUnlockedEvent : GameEvent
+  {
+    public CollectionItemUnlockedEvent(string itemId)
+    {
+      EventType = "collection_unlocked";
+      ItemId = itemId;
+    }
+
+    public string ItemId { get; }
+  }
+
+  public sealed class TotemTierChangedEvent : GameEvent
+  {
+    public TotemTierChangedEvent(int tier)
+    {
+      EventType = "totem_tier_changed";
+      Tier = tier;
+    }
+
+    public int Tier { get; }
   }
 }

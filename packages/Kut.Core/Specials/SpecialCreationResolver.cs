@@ -10,7 +10,8 @@ namespace Kut.Core.Specials
   {
     None,
     WindChime,
-    ShamanDrum
+    ShamanDrum,
+    FireBomb
   }
 
   public static class SpecialCreationResolver
@@ -21,6 +22,7 @@ namespace Kut.Core.Specials
       GridPos? playerSwapDestination,
       bool allowDrum,
       bool allowChime,
+      bool allowFireBomb,
       out GridPos spawnAt,
       out LineOrientation orientation,
       out string resonanceMatchGroup)
@@ -42,6 +44,12 @@ namespace Kut.Core.Specials
         return SpecialCreationKind.WindChime;
       }
 
+      if (allowFireBomb && MatchDetection.TryFindTwoByTwo(board, cluster, out spawnAt))
+      {
+        spawnAt = SelectSpawnCell(cluster, playerSwapDestination);
+        return SpecialCreationKind.FireBomb;
+      }
+
       return SpecialCreationKind.None;
     }
 
@@ -52,7 +60,7 @@ namespace Kut.Core.Specials
       out GridPos spawnAt,
       out LineOrientation orientation)
     {
-      var kind = Resolve(board, cluster, playerSwapDestination, false, true, out spawnAt, out orientation, out _);
+      var kind = Resolve(board, cluster, playerSwapDestination, false, true, false, out spawnAt, out orientation, out _);
       return kind == SpecialCreationKind.WindChime;
     }
 

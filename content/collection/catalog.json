@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "id": "relic_chime_shard", "titleTr": "Rüzgar çini parçası", "unlockOnLevelComplete": "level_004", "category": "special" },
+    { "id": "relic_mud_bead", "titleTr": "Çamur boncuğu", "unlockOnLevelComplete": "level_005", "category": "obstacle" },
+    { "id": "relic_stone_mark", "titleTr": "Taş mühür", "unlockOnLevelComplete": "level_006", "category": "obstacle" },
+    { "id": "relic_vine_knot", "titleTr": "Sarmaşık düğümü", "unlockOnLevelComplete": "level_007", "category": "obstacle" },
+    { "id": "relic_drum_skin", "titleTr": "Şaman davulu", "unlockOnLevelComplete": "level_008", "category": "special" },
+    { "id": "relic_shrine_ember", "titleTr": "Kutsal kor ateşi", "unlockOnLevelComplete": "level_010", "category": "chapter" },
+    { "id": "relic_fire_seed", "titleTr": "Ateş tohumu", "unlockOnLevelComplete": "level_011", "category": "element" },
+    { "id": "relic_bomb_crystal", "titleTr": "Alev kristali", "unlockOnLevelComplete": "level_013", "category": "special" },
+    { "id": "relic_wind_feather", "titleTr": "Rüzgar tüyü", "unlockOnLevelComplete": "level_014", "category": "element" },
+    { "id": "relic_ch2_finale", "titleTr": "Beş element mührü", "unlockOnLevelComplete": "level_020", "category": "chapter" }
+  ]
+}

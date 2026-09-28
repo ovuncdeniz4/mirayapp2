@@ -12,7 +12,9 @@ dotnet run --project tools/Kut.Playtest -- --demo
 dotnet run --project tools/Kut.Playtest -- --slice
 ```
 
-Design docs: [`docs/architecture.md`](docs/architecture.md), [`docs/game-design-ch1.md`](docs/game-design-ch1.md). Level schema: `content/schemas/level.schema.json`.
+Design docs: [`docs/architecture.md`](docs/architecture.md), [`docs/game-design-ch1.md`](docs/game-design-ch1.md), [`docs/game-design-ch2.md`](docs/game-design-ch2.md). Level schema: `content/schemas/level.schema.json`.
+
+**Chapters 1–2 (levels 1–20)** in `--slice`: Fire/Wind tiles, Fire Bomb (`B`), collection relics, totem tiers, animal move bonuses.
 
 **Vertical slice (`--slice`):** onboarding → permanent spirit animal → home / map → **Chapter 1 levels 1–10** (Wind Chime, mud, stone, vine, Shaman Drum, shrine finale). In-level commands: `swap x1 y1 x2 y2`, `activate x y` (specials), `board`, `quit`. Completing **level_010** unlocks totem/collection tabs in save data.
 

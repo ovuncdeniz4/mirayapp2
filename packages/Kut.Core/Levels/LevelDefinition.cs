@@ -14,6 +14,7 @@ namespace Kut.Core.Levels
     public List<string> SpawnTable { get; set; } = new List<string>();
     public bool EnableWindChime { get; set; } = true;
     public bool EnableShamanDrum { get; set; } = false;
+    public bool EnableFireBomb { get; set; } = false;
     public bool EnableSpecialCreation { get; set; } = true;
     public List<MudCellDefinition> MudCells { get; set; } = new List<MudCellDefinition>();
     public List<MudCellDefinition> VineCells { get; set; } = new List<MudCellDefinition>();

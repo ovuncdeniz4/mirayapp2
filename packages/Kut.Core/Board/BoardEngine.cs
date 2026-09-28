@@ -109,12 +109,27 @@ namespace Kut.Core.Board
         ShamanDrumRules.Activate(State, activate.At, events, out var toClear);
         ClearTilesWithReactions(toClear, events);
       }
+      else if (cell.Tile.Special == SpecialType.FireBomb)
+      {
+        FireBombRules.Activate(State, activate.At, events, out var toClear);
+        ClearTilesWithReactions(toClear, events);
+      }
       else
       {
         return;
       }
 
+      MovesRemaining--;
+      events.Add(new MoveConsumedEvent(MovesRemaining));
       ResolveUntilStable(events);
+    }
+
+    public void AddBonusMoves(int amount)
+    {
+      if (amount > 0)
+      {
+        MovesRemaining += amount;
+      }
     }
 
     private void ResolveUntilStable(List<GameEvent> events)
@@ -152,6 +167,7 @@ namespace Kut.Core.Board
           _lastSwapDestination,
           Rules.EnableShamanDrum,
           Rules.EnableWindChime,
+          Rules.EnableFireBomb,
           out var spawn,
           out var orientation,
           out var resonance);
@@ -188,6 +204,13 @@ namespace Kut.Core.Board
         State.SetCell(specialSpawn.Value, Cell.FromTile(tile));
         events.Add(new SpecialCreatedEvent(specialSpawn.Value, SpecialType.ShamanDrum, lineOrientation));
       }
+      else if (specialSpawn.HasValue && creationKind == SpecialCreationKind.FireBomb)
+      {
+        var tile = spawnBase ?? TileRegistry.Create("fire_ember");
+        tile.Special = SpecialType.FireBomb;
+        State.SetCell(specialSpawn.Value, Cell.FromTile(tile));
+        events.Add(new SpecialCreatedEvent(specialSpawn.Value, SpecialType.FireBomb, null));
+      }
     }
 
     private void ClearTilesWithReactions(List<GridPos> positions, List<GameEvent> events)
@@ -199,8 +222,11 @@ namespace Kut.Core.Board
 
       var waterSources = new List<GridPos>();
       var earthSources = new List<GridPos>();
+      var fireSources = new List<GridPos>();
       var earthCount = 0;
       var waterCount = 0;
+      var fireCount = 0;
+      var windCount = 0;
       events.Add(new TilesClearedEvent(positions));
 
       foreach (var pos in positions)
@@ -221,6 +247,15 @@ namespace Kut.Core.Board
           earthSources.Add(pos);
           earthCount++;
         }
+        else if (cell.Tile.Element == Element.Fire)
+        {
+          fireSources.Add(pos);
+          fireCount++;
+        }
+        else if (cell.Tile.Element == Element.Air)
+        {
+          windCount++;
+        }
 
         State.SetCell(pos, Cell.Empty());
       }
@@ -235,8 +270,19 @@ namespace Kut.Core.Board
         events.Add(new ElementCollectedEvent(Element.Water, waterCount));
       }
 
+      if (fireCount > 0)
+      {
+        events.Add(new ElementCollectedEvent(Element.Fire, fireCount));
+      }
+
+      if (windCount > 0)
+      {
+        events.Add(new ElementCollectedEvent(Element.Air, windCount));
+      }
+
       ElementReactionSystem.ApplyWaterMudReactions(State, waterSources, events);
       ElementReactionSystem.ApplyEarthVineReactions(State, earthSources, events);
+      ElementReactionSystem.ApplyFireBurnReactions(State, fireSources, events);
     }
   }
 }
