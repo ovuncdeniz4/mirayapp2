@@ -7,4 +7,8 @@ DEST="$ROOT/unity/Kut/Assets/Plugins"
 mkdir -p "$DEST"
 cp "$ROOT/packages/Kut.Core/bin/Release/netstandard2.1/Kut.Core.dll" "$DEST/Kut.Core.dll"
 cp "$ROOT/packages/Kut.Core/bin/Release/netstandard2.1/Kut.Core.pdb" "$DEST/" 2>/dev/null || true
+LEVEL_DEST="$ROOT/unity/Kut/Assets/_Project/Content/Levels"
+mkdir -p "$LEVEL_DEST"
+cp "$ROOT/content/levels/"*.json "$LEVEL_DEST/"
 echo "Synced Kut.Core.dll to $DEST"
+echo "Synced level JSON to $LEVEL_DEST"

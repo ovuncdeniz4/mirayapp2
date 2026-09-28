@@ -1,0 +1,17 @@
+---
+description: KUT match-3 — Core vs Unity conventions
+globs:
+  - packages/Kut.Core/**
+  - tools/**
+  - content/**
+  - unity/Kut/**
+---
+
+# KUT project rules
+
+- Read `docs/architecture.md` before new gameplay features.
+- **Never** mutate `BoardEngine` / `BoardState` from Unity `BoardView` or UI — commands + events only.
+- Water/Earth cleared cells are **reaction sources** for mud/vine on adjacent cells.
+- Chapter 1: no Fire Bomb; Spirit is meta, not a board color.
+- Level JSON lives in `content/levels`; validate with `dotnet run --project tools/Kut.LevelValidator`.
+- After Core changes, run `./tools/sync-core-to-unity.sh` before Unity testing.

@@ -21,5 +21,7 @@ namespace Kut.Core.Tiles
     }
 
     public static IReadOnlyList<string> DefaultSpawnTable => new[] { "earth_moss", "water_drop" };
+
+    public static bool IsKnownSpawnId(string tileId) => Prototypes.ContainsKey(tileId);
   }
 }

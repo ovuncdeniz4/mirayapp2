@@ -1,0 +1,15 @@
+{
+  "id": "level_004",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 22,
+  "seed": 104,
+  "spawnTable": ["earth_moss", "water_drop"],
+  "enableWindChime": true,
+  "enableShamanDrum": false,
+  "enableSpecialCreation": true,
+  "objectives": [
+    { "type": "create_special", "target": 1, "special": "wind_chime" },
+    { "type": "activate_special", "target": 1, "special": "wind_chime" }
+  ]
+}

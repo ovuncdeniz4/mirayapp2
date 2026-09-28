@@ -1,30 +1,58 @@
 using System.Collections.Generic;
-using Kut.Core.Board;
 using Kut.Core.Commands;
 using Kut.Core.GameEvents;
+using Kut.Core.Levels;
 
 namespace Kut.Unity.App
 {
   /// <summary>
-  /// Application layer: sole mutator of Kut.Core BoardEngine from gameplay commands.
+  /// Application layer: sole mutator of Kut.Core from gameplay commands.
   /// </summary>
   public sealed class GameplaySession
   {
-    public BoardEngine Engine { get; }
+    public LevelSession LevelSession { get; }
 
-    public GameplaySession(BoardEngine engine)
+    public GameplaySession(LevelSession levelSession)
     {
-      Engine = engine;
+      LevelSession = levelSession;
     }
 
     public static GameplaySession CreatePrototype()
     {
-      return new GameplaySession(BoardEngine.CreatePrototype());
+      return FromLevelJson(null);
+    }
+
+    public static GameplaySession FromLevelJson(string? json)
+    {
+      LevelDefinition def;
+      if (string.IsNullOrWhiteSpace(json))
+      {
+        def = new LevelDefinition
+        {
+          Id = "level_prototype",
+          Chapter = 1,
+          Moves = 20,
+          Seed = 42,
+          EnableWindChime = true,
+          EnableSpecialCreation = true
+        };
+        def.Objectives.Add(new Kut.Core.Objectives.ObjectiveDefinition
+        {
+          Type = Kut.Core.Objectives.ObjectiveType.MakeMatches,
+          Target = 99
+        });
+      }
+      else
+      {
+        def = LevelLoader.Parse(json);
+      }
+
+      return new GameplaySession(LevelSession.FromDefinition(def));
     }
 
     public CommandResult Submit(IGameCommand command)
     {
-      return Engine.Apply(command);
+      return LevelSession.Submit(command);
     }
 
     public IReadOnlyList<GameEvent> LastEvents { get; private set; } = new List<GameEvent>();

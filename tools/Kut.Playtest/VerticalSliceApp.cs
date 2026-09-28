@@ -40,6 +40,11 @@ namespace Kut.Playtest
         }
 
         Console.WriteLine("[1] Devam et  [2] Harita  [3] Hayvan  [4] Çıkış");
+        if (save.TotemTabUnlocked)
+        {
+          Console.WriteLine("[5] Totem  [6] Koleksiyon");
+        }
+
         Console.Write("> ");
         var choice = Console.ReadLine()?.Trim();
         switch (choice)
@@ -50,7 +55,7 @@ namespace Kut.Playtest
             if (choice == "2")
             {
               ShowMap(save);
-              Console.Write("Oyna (1-3): ");
+              Console.Write($"Oyna (1-{save.HighestUnlockedLevel}): ");
               if (int.TryParse(Console.ReadLine(), out var pick) && pick >= 1 && pick <= save.HighestUnlockedLevel)
               {
                 levelId = LevelIds[pick - 1];
@@ -61,6 +66,28 @@ namespace Kut.Playtest
             break;
           case "3":
             Console.WriteLine($"Kalıcı ruh eşleşmen: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
+            break;
+          case "5":
+            if (save.TotemTabUnlocked)
+            {
+              ShowTotemTab(save);
+            }
+            else
+            {
+              Console.WriteLine("Totem henüz uyanmadı (level 10).");
+            }
+
+            break;
+          case "6":
+            if (save.CollectionTabUnlocked)
+            {
+              ShowCollectionTab(save);
+            }
+            else
+            {
+              Console.WriteLine("Koleksiyon henüz açılmadı (level 10).");
+            }
+
             break;
           case "4":
             return 0;
@@ -96,6 +123,29 @@ namespace Kut.Playtest
         var mark = done ? "✓" : locked ? "🔒" : "→";
         Console.WriteLine($"  {mark} {i + 1}. {LevelIds[i]}");
       }
+    }
+
+    private static void ShowTotemTab(SaveData save)
+    {
+      Console.WriteLine("=== Totem (CLI stub) ===");
+      Console.WriteLine($"Ruh hayvanın totemi: {AnimalAssignment.DisplayNameTr(save.AnimalId)}");
+      Console.WriteLine("Bölüm 1 sonrası totem uyanışı kaydedildi — Unity’de görsel totem burada.");
+    }
+
+    private static void ShowCollectionTab(SaveData save)
+    {
+      Console.WriteLine("=== Koleksiyon (CLI stub) ===");
+      var completed = save.Levels.Count(kv => kv.Value.Completed);
+      Console.WriteLine($"Tamamlanan seviyeler: {completed}/{LevelIds.Length}");
+      foreach (var id in LevelIds)
+      {
+        if (save.Levels.TryGetValue(id, out var entry) && entry.Completed)
+        {
+          Console.WriteLine($"  · {id}");
+        }
+      }
+
+      Console.WriteLine("(Element kartları ve relic’ler Unity koleksiyon ekranında.)");
     }
 
     private static void PlayLevel(string path, SaveData save, string savePath)

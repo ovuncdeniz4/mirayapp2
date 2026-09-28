@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kut.local/schemas/level.schema.json",
+  "title": "KUT Level Definition",
+  "type": "object",
+  "required": ["id", "chapter", "boardSize", "moves", "seed", "objectives"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^level_[0-9]{3}$" },
+    "chapter": { "type": "integer", "minimum": 1 },
+    "boardSize": {
+      "type": "object",
+      "required": ["w", "h"],
+      "properties": {
+        "w": { "type": "integer", "minimum": 3, "maximum": 12 },
+        "h": { "type": "integer", "minimum": 3, "maximum": 12 }
+      }
+    },
+    "moves": { "type": "integer", "minimum": 1 },
+    "seed": { "type": "integer" },
+    "spawnTable": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["earth_moss", "water_drop"] },
+      "minItems": 1
+    },
+    "enableWindChime": { "type": "boolean" },
+    "enableShamanDrum": { "type": "boolean" },
+    "enableSpecialCreation": { "type": "boolean" },
+    "mudCells": { "$ref": "#/$defs/layeredCells" },
+    "vineCells": { "$ref": "#/$defs/layeredCells" },
+    "stoneCells": { "$ref": "#/$defs/gridCells" },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/objective" }
+    }
+  },
+  "$defs": {
+    "layeredCells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["x", "y"],
+        "properties": {
+          "x": { "type": "integer", "minimum": 0 },
+          "y": { "type": "integer", "minimum": 0 },
+          "layers": { "type": "integer", "minimum": 1, "default": 1 }
+        }
+      }
+    },
+    "gridCells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["x", "y"],
+        "properties": {
+          "x": { "type": "integer", "minimum": 0 },
+          "y": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "make_matches",
+            "cascade_depth",
+            "collect_element",
+            "clear_obstacle",
+            "create_special",
+            "activate_special"
+          ]
+        },
+        "target": { "type": "integer", "minimum": 1 },
+        "element": { "type": "string", "enum": ["earth", "water"] },
+        "obstacle": { "type": "string", "enum": ["mud", "vine"] },
+        "special": { "type": "string", "enum": ["wind_chime", "shaman_drum"] }
+      }
+    }
+  }
+}

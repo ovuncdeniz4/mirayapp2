@@ -74,18 +74,9 @@ namespace Kut.Core.Levels
         }
       }
 
-      if (root.TryGetProperty("mudCells", out var mudCells) && mudCells.ValueKind == JsonValueKind.Array)
-      {
-        foreach (var cell in mudCells.EnumerateArray())
-        {
-          def.MudCells.Add(new MudCellDefinition
-          {
-            X = cell.GetProperty("x").GetInt32(),
-            Y = cell.GetProperty("y").GetInt32(),
-            Layers = cell.TryGetProperty("layers", out var layers) ? layers.GetInt32() : 1
-          });
-        }
-      }
+      ParseLayeredObstacleCells(root, "mudCells", def.MudCells);
+      ParseLayeredObstacleCells(root, "vineCells", def.VineCells);
+      ParseGridCells(root, "stoneCells", def.StoneCells);
 
       return def;
     }
@@ -131,6 +122,44 @@ namespace Kut.Core.Levels
         "activate_special" => ObjectiveType.ActivateSpecial,
         _ => ObjectiveType.MakeMatches
       };
+
+    private static void ParseLayeredObstacleCells(
+      JsonElement root,
+      string propertyName,
+      List<MudCellDefinition> target)
+    {
+      if (!root.TryGetProperty(propertyName, out var cells) || cells.ValueKind != JsonValueKind.Array)
+      {
+        return;
+      }
+
+      foreach (var cell in cells.EnumerateArray())
+      {
+        target.Add(new MudCellDefinition
+        {
+          X = cell.GetProperty("x").GetInt32(),
+          Y = cell.GetProperty("y").GetInt32(),
+          Layers = cell.TryGetProperty("layers", out var layers) ? layers.GetInt32() : 1
+        });
+      }
+    }
+
+    private static void ParseGridCells(JsonElement root, string propertyName, List<GridCellDefinition> target)
+    {
+      if (!root.TryGetProperty(propertyName, out var cells) || cells.ValueKind != JsonValueKind.Array)
+      {
+        return;
+      }
+
+      foreach (var cell in cells.EnumerateArray())
+      {
+        target.Add(new GridCellDefinition
+        {
+          X = cell.GetProperty("x").GetInt32(),
+          Y = cell.GetProperty("y").GetInt32()
+        });
+      }
+    }
 
     private static void ApplyObstacles(BoardState state, LevelDefinition def)
     {

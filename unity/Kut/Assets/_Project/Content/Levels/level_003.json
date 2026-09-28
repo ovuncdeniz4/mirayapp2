@@ -1,0 +1,11 @@
+{
+  "id": "level_003",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 22,
+  "seed": 103,
+  "spawnTable": ["earth_moss", "water_drop"],
+  "enableWindChime": false,
+  "enableSpecialCreation": false,
+  "objectives": [{ "type": "collect_element", "target": 18, "element": "earth" }]
+}

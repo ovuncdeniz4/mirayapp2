@@ -36,7 +36,8 @@ namespace Kut.Unity.Input
       }
 
       var result = sessionHost.Session.SubmitAndRemember(new SwapCommand(_pressStart.Value, end));
-      boardView.ReplayEvents(result.Events);
+      var state = sessionHost.Session.LevelSession.Engine.State;
+      boardView.ReplayEvents(result.Events, state);
       _pressStart = null;
     }
   }

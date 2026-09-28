@@ -7,9 +7,12 @@ Stage A (technical prototype): deterministic **Kut.Core** Match-3 engine + Unity
 ```bash
 export PATH="$HOME/.dotnet:$PATH"
 dotnet test
+dotnet run --project tools/Kut.LevelValidator
 dotnet run --project tools/Kut.Playtest -- --demo
 dotnet run --project tools/Kut.Playtest -- --slice
 ```
+
+Design docs: [`docs/architecture.md`](docs/architecture.md), [`docs/game-design-ch1.md`](docs/game-design-ch1.md). Level schema: `content/schemas/level.schema.json`.
 
 **Vertical slice (`--slice`):** onboarding → permanent spirit animal → home / map → **Chapter 1 levels 1–10** (Wind Chime, mud, stone, vine, Shaman Drum, shrine finale). In-level commands: `swap x1 y1 x2 y2`, `activate x y` (specials), `board`, `quit`. Completing **level_010** unlocks totem/collection tabs in save data.
 
