@@ -12,7 +12,7 @@ dotnet run --project tools/Kut.Playtest -- --demo
 dotnet run --project tools/Kut.Playtest -- --slice
 ```
 
-Design docs: [`docs/architecture.md`](docs/architecture.md), [`docs/game-design-ch1.md`](docs/game-design-ch1.md), [`docs/game-design-ch2.md`](docs/game-design-ch2.md). Level schema: `content/schemas/level.schema.json`.
+Design: [`docs/gdd-index.md`](docs/gdd-index.md) (UX/UI spec, visual system, chapters). Level schema: `content/schemas/level.schema.json`.
 
 **Chapters 1–2 (levels 1–20)** in `--slice`: Fire/Wind tiles, Fire Bomb (`B`), collection relics, totem tiers, animal move bonuses.
 
@@ -31,6 +31,8 @@ Legend: `E` earth, `W` water, `M` mud, `V` vine, `C` wind chime, `D` shaman drum
 ./tools/sync-core-to-unity.sh
 ```
 
-4. Create/open a scene with `GameplaySessionHost`, `BoardView`, and `SwapInputController`.
+4. Run `./tools/sync-core-to-unity.sh`, then add **`KutAppBootstrap`** to a scene and press Play ([`docs/unity-setup.md`](docs/unity-setup.md)).
+
+Screens S-01…S-07 match CLI `--slice` per [`docs/ux-ui-spec.md`](docs/ux-ui-spec.md). Optional low-level prototype: `GameplaySessionHost` + `BoardView` + `SwapInputController`.
 
 Architecture: **Input → GameplaySession → Kut.Core → GameEvents → BoardView** (presentation never mutates engine state).
