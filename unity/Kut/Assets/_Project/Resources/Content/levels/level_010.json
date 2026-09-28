@@ -1,0 +1,32 @@
+{
+  "id": "level_010",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 28,
+  "seed": 110,
+  "enableWindChime": true,
+  "enableShamanDrum": true,
+  "enableSpecialCreation": true,
+  "mudCells": [
+    { "x": 2, "y": 2, "layers": 1 },
+    { "x": 3, "y": 2, "layers": 1 },
+    { "x": 4, "y": 2, "layers": 1 },
+    { "x": 5, "y": 2, "layers": 1 },
+    { "x": 2, "y": 3, "layers": 1 },
+    { "x": 5, "y": 3, "layers": 1 },
+    { "x": 3, "y": 4, "layers": 1 },
+    { "x": 4, "y": 4, "layers": 1 }
+  ],
+  "vineCells": [
+    { "x": 1, "y": 2, "layers": 1 },
+    { "x": 6, "y": 2, "layers": 1 },
+    { "x": 1, "y": 3, "layers": 1 },
+    { "x": 6, "y": 3, "layers": 1 },
+    { "x": 2, "y": 5, "layers": 1 },
+    { "x": 5, "y": 5, "layers": 1 }
+  ],
+  "objectives": [
+    { "type": "clear_obstacle", "target": 8, "obstacle": "mud" },
+    { "type": "clear_obstacle", "target": 6, "obstacle": "vine" }
+  ]
+}

@@ -9,7 +9,7 @@ globs:
 
 # KUT project rules
 
-- Read `docs/architecture.md` before new gameplay features.
+- Read `docs/architecture.md` before new gameplay features; UX/UI changes must follow `docs/ux-ui-spec.md` and `docs/visual-design-system.md`.
 - **Never** mutate `BoardEngine` / `BoardState` from Unity `BoardView` or UI — commands + events only.
 - Water/Earth cleared cells are **reaction sources** for mud/vine on adjacent cells.
 - Chapter 1: no Fire Bomb; Spirit is meta, not a board color.

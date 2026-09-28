@@ -1,0 +1,10 @@
+{
+  "id": "level_017",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 28,
+  "seed": 207,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
+  "vineCells": [{ "x": 2, "y": 4, "layers": 1 }, { "x": 5, "y": 4, "layers": 1 }],
+  "objectives": [{ "type": "clear_obstacle", "target": 2, "obstacle": "vine" }]
+}

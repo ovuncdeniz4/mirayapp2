@@ -1,0 +1,19 @@
+{
+  "id": "level_020",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 32,
+  "seed": 210,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
+  "enableWindChime": true,
+  "enableShamanDrum": true,
+  "enableFireBomb": true,
+  "enableSpecialCreation": true,
+  "mudCells": [{ "x": 3, "y": 2, "layers": 1 }, { "x": 4, "y": 2, "layers": 1 }],
+  "vineCells": [{ "x": 2, "y": 5, "layers": 1 }, { "x": 5, "y": 5, "layers": 1 }],
+  "objectives": [
+    { "type": "clear_obstacle", "target": 2, "obstacle": "mud" },
+    { "type": "clear_obstacle", "target": 2, "obstacle": "vine" },
+    { "type": "collect_element", "target": 8, "element": "fire" }
+  ]
+}

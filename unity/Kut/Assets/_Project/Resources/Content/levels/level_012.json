@@ -1,0 +1,10 @@
+{
+  "id": "level_012",
+  "chapter": 2,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 24,
+  "seed": 202,
+  "spawnTable": ["earth_moss", "water_drop", "fire_ember"],
+  "enableSpecialCreation": false,
+  "objectives": [{ "type": "collect_element", "target": 18, "element": "fire" }]
+}
