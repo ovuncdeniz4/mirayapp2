@@ -113,10 +113,12 @@ Level → victory → meta unlocks → Ana Ekran
 
 | UX id | Unity panel | CLI |
 |-------|-------------|-----|
-| S-01 | `OnboardingPanel` | onboarding prompts |
-| S-02 | `HomePanel` | menu `[1]–[6]` |
-| S-03 | `MapPanel` | `[2]` map |
-| S-04 | `LevelPanel` | in-level loop |
+| S-01 | `OnboardingPanel` + reveal | onboarding prompts |
+| S-02 | `HomePanel` (meta buttons lock until L10) | menu `[1]–[6]` |
+| S-03 | `MapPanel` scroll + tap level | `[2]` map + pick |
+| S-04 | `LevelPanel` + `BoardGridUi` + `ResultOverlayUi` | in-level loop |
 | S-05 | `AnimalPanel` | `[3]` |
 | S-06 | `TotemPanel` | `[5]` |
 | S-07 | `CollectionPanel` | `[6]` |
+
+**Board input (Unity):** tap cell → tap adjacent cell = swap; tap special twice = activate.

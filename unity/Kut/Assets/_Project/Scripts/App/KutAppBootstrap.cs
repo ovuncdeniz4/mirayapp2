@@ -25,6 +25,7 @@ namespace Kut.Unity.App
     private string _savePath = "";
 
     private GameObject _onboardingPanel = null!;
+    private GameObject _onboardingRevealPanel = null!;
     private GameObject _homePanel = null!;
     private GameObject _mapPanel = null!;
     private GameObject _levelPanel = null!;
@@ -34,11 +35,15 @@ namespace Kut.Unity.App
 
     private InputField? _monthInput;
     private InputField? _dayInput;
+    private Text? _revealText;
     private Text? _homeBody;
-    private Text? _mapBody;
+    private Transform? _mapListRoot;
     private Text? _levelHud;
     private Text? _objectivesText;
-    private BoardView? _boardView;
+    private BoardGridUi? _boardGrid;
+    private ResultOverlayUi? _resultOverlay;
+    private Button? _totemBtn;
+    private Button? _collectionBtn;
     private LevelSession? _levelSession;
     private string? _activeLevelId;
 
@@ -50,12 +55,15 @@ namespace Kut.Unity.App
 
       var canvas = KutUiFactory.CreateRootCanvas("KUT_UI");
       BuildOnboarding(canvas.transform);
+      BuildOnboardingReveal(canvas.transform);
       BuildHome(canvas.transform);
       BuildMap(canvas.transform);
       BuildLevel(canvas.transform);
       BuildAnimal(canvas.transform);
       BuildTotem(canvas.transform);
       BuildCollection(canvas.transform);
+      _resultOverlay = canvas.gameObject.AddComponent<ResultOverlayUi>();
+      _resultOverlay.Build(canvas.transform);
 
       ShowInitial();
     }
@@ -76,12 +84,14 @@ namespace Kut.Unity.App
     private void HideAll()
     {
       _onboardingPanel.SetActive(false);
+      _onboardingRevealPanel.SetActive(false);
       _homePanel.SetActive(false);
       _mapPanel.SetActive(false);
       _levelPanel.SetActive(false);
       _animalPanel.SetActive(false);
       _totemPanel.SetActive(false);
       _collectionPanel.SetActive(false);
+      _resultOverlay?.Hide();
     }
 
     private void BuildOnboarding(Transform root)
@@ -101,6 +111,22 @@ namespace Kut.Unity.App
         new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f)).onClick.AddListener(OnOnboardingSubmit);
     }
 
+    private void BuildOnboardingReveal(Transform root)
+    {
+      _onboardingRevealPanel = KutUiFactory.Panel(root, "S01b_Reveal");
+      KutUiFactory.Title(_onboardingRevealPanel.transform, "Ruh hayvanın", 48);
+      _revealText = KutUiFactory.Body(_onboardingRevealPanel.transform, "Reveal",
+        new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.55f), 40);
+      _revealText.alignment = TextAnchor.MiddleCenter;
+      KutUiFactory.PrimaryButton(_onboardingRevealPanel.transform, "Ana ekrana git",
+        new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f)).onClick.AddListener(() =>
+      {
+        HideAll();
+        RefreshHome();
+        _homePanel.SetActive(true);
+      });
+    }
+
     private void BuildHome(Transform root)
     {
       _homePanel = KutUiFactory.Panel(root, "S02_Home");
@@ -108,30 +134,46 @@ namespace Kut.Unity.App
       _homeBody = KutUiFactory.Body(_homePanel.transform, "Body",
         new Vector2(0.08f, 0.45f), new Vector2(0.92f, 0.78f));
       KutUiFactory.PrimaryButton(_homePanel.transform, "Devam et",
-        new Vector2(0.12f, 0.28f), new Vector2(0.88f, 0.38f)).onClick.AddListener(() => StartLevel(GameShell.ResolveContinueLevelId(_save, _content)));
+        new Vector2(0.12f, 0.28f), new Vector2(0.88f, 0.38f)).onClick.AddListener(() =>
+        StartLevel(GameShell.ResolveContinueLevelId(_save, _content)));
       KutUiFactory.PrimaryButton(_homePanel.transform, "Harita",
         new Vector2(0.12f, 0.18f), new Vector2(0.45f, 0.26f)).onClick.AddListener(ShowMap);
       KutUiFactory.PrimaryButton(_homePanel.transform, "Hayvan",
         new Vector2(0.55f, 0.18f), new Vector2(0.88f, 0.26f)).onClick.AddListener(ShowAnimal);
-      KutUiFactory.PrimaryButton(_homePanel.transform, "Totem",
-        new Vector2(0.12f, 0.08f), new Vector2(0.45f, 0.16f)).onClick.AddListener(ShowTotem);
-      KutUiFactory.PrimaryButton(_homePanel.transform, "Koleksiyon",
-        new Vector2(0.55f, 0.08f), new Vector2(0.88f, 0.16f)).onClick.AddListener(ShowCollection);
+      _totemBtn = KutUiFactory.PrimaryButton(_homePanel.transform, "Totem 🔒",
+        new Vector2(0.12f, 0.08f), new Vector2(0.45f, 0.16f));
+      _totemBtn.onClick.AddListener(ShowTotem);
+      _collectionBtn = KutUiFactory.PrimaryButton(_homePanel.transform, "Koleksiyon 🔒",
+        new Vector2(0.55f, 0.08f), new Vector2(0.88f, 0.16f));
+      _collectionBtn.onClick.AddListener(ShowCollection);
     }
 
     private void BuildMap(Transform root)
     {
       _mapPanel = KutUiFactory.Panel(root, "S03_Map");
       KutUiFactory.Title(_mapPanel.transform, "Harita", 48);
-      _mapBody = KutUiFactory.Body(_mapPanel.transform, "List",
-        new Vector2(0.06f, 0.2f), new Vector2(0.94f, 0.78f));
+      var scrollGo = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect), typeof(Image));
+      scrollGo.transform.SetParent(_mapPanel.transform, false);
+      var srt = scrollGo.GetComponent<RectTransform>();
+      srt.anchorMin = new Vector2(0.06f, 0.18f);
+      srt.anchorMax = new Vector2(0.94f, 0.78f);
+      srt.offsetMin = Vector2.zero;
+      srt.offsetMax = Vector2.zero;
+      scrollGo.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
+
+      var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup));
+      content.transform.SetParent(scrollGo.transform, false);
+      _mapListRoot = content.transform;
+      var vlg = content.GetComponent<VerticalLayoutGroup>();
+      vlg.spacing = 8;
+      vlg.childControlHeight = true;
+      vlg.childForceExpandHeight = false;
+      var scroll = scrollGo.GetComponent<ScrollRect>();
+      scroll.content = content.GetComponent<RectTransform>();
+      scroll.horizontal = false;
+
       KutUiFactory.PrimaryButton(_mapPanel.transform, "Geri",
-        new Vector2(0.2f, 0.06f), new Vector2(0.8f, 0.14f)).onClick.AddListener(() =>
-      {
-        HideAll();
-        RefreshHome();
-        _homePanel.SetActive(true);
-      });
+        new Vector2(0.2f, 0.06f), new Vector2(0.8f, 0.14f)).onClick.AddListener(BackHome);
     }
 
     private void BuildLevel(Transform root)
@@ -142,12 +184,12 @@ namespace Kut.Unity.App
       _objectivesText = KutUiFactory.Body(_levelPanel.transform, "Objectives",
         new Vector2(0.05f, 0.78f), new Vector2(0.95f, 0.87f), 28);
 
-      var boardGo = new GameObject("BoardView", typeof(RectTransform));
-      boardGo.transform.SetParent(_levelPanel.transform, false);
-      _boardView = boardGo.AddComponent<BoardView>();
+      var boardHost = new GameObject("BoardHost", typeof(RectTransform));
+      boardHost.transform.SetParent(_levelPanel.transform, false);
+      _boardGrid = boardHost.AddComponent<BoardGridUi>();
 
       KutUiFactory.PrimaryButton(_levelPanel.transform, "Geri",
-        new Vector2(0.15f, 0.04f), new Vector2(0.85f, 0.1f)).onClick.AddListener(ExitLevel);
+        new Vector2(0.15f, 0.04f), new Vector2(0.85f, 0.1f)).onClick.AddListener(ConfirmQuitLevel);
     }
 
     private void BuildAnimal(Transform root)
@@ -197,9 +239,9 @@ namespace Kut.Unity.App
 
       GameShell.CompleteOnboarding(_save, month, day);
       SaveStore.Save(_savePath, _save);
+      _revealText!.text = AnimalAssignment.DisplayNameTr(_save.AnimalId);
       HideAll();
-      RefreshHome();
-      _homePanel.SetActive(true);
+      _onboardingRevealPanel.SetActive(true);
     }
 
     private void RefreshHome()
@@ -207,7 +249,7 @@ namespace Kut.Unity.App
       var sb = new StringBuilder();
       sb.AppendLine($"Ruh hayvanın: {AnimalAssignment.DisplayNameTr(_save.AnimalId)}");
       sb.AppendLine($"Bonus: {AnimalBonus.DescriptionTr(_save.AnimalId)}");
-      sb.AppendLine($"İlerleme: seviye 1–{_save.HighestUnlockedLevel} / {_content.Chapters.AllLevelIds.Count}");
+      sb.AppendLine($"Seviye 1–{_save.HighestUnlockedLevel} / {_content.Chapters.AllLevelIds.Count} açık");
       if (_save.TotemTier > 0)
       {
         sb.AppendLine($"Totem katmanı: {_save.TotemTier}");
@@ -221,17 +263,52 @@ namespace Kut.Unity.App
       sb.AppendLine();
       sb.AppendLine("Kurgusal oyun — tarihsel şaman geleneği değildir.");
       _homeBody!.text = sb.ToString();
+
+      SetMetaButton(_totemBtn, _save.TotemTabUnlocked, "Totem");
+      SetMetaButton(_collectionBtn, _save.CollectionTabUnlocked, "Koleksiyon");
+    }
+
+    private static void SetMetaButton(Button? btn, bool unlocked, string label)
+    {
+      if (btn == null)
+      {
+        return;
+      }
+
+      btn.interactable = unlocked;
+      var text = btn.GetComponentInChildren<Text>();
+      if (text != null)
+      {
+        text.text = unlocked ? label : label + " 🔒";
+      }
+
+      btn.GetComponent<Image>().color = unlocked ? KutDesignTokens.AccentGold : KutDesignTokens.PanelSurface;
     }
 
     private void ShowMap()
     {
       HideAll();
-      var sb = new StringBuilder();
+      RebuildMapList();
+      _mapPanel.SetActive(true);
+    }
+
+    private void RebuildMapList()
+    {
+      if (_mapListRoot == null)
+      {
+        return;
+      }
+
+      foreach (Transform child in _mapListRoot)
+      {
+        Destroy(child.gameObject);
+      }
+
       var global = 0;
       foreach (var chapter in _content.Chapters.Chapters)
       {
         var accessible = MetaProgression.CanAccessChapter(chapter, _save, _content.Chapters);
-        sb.AppendLine(accessible ? chapter.TitleTr : chapter.TitleTr + " 🔒");
+        AddMapHeader(chapter.TitleTr + (accessible ? "" : " 🔒"));
         if (!accessible)
         {
           global += chapter.Levels.Count;
@@ -241,15 +318,54 @@ namespace Kut.Unity.App
         foreach (var levelId in chapter.Levels)
         {
           global++;
-          var locked = global > _save.HighestUnlockedLevel;
+          var idx = global;
+          var locked = idx > _save.HighestUnlockedLevel;
           var done = _save.Levels.TryGetValue(levelId, out var e) && e.Completed;
-          sb.AppendLine($"  {(done ? "✓" : locked ? "🔒" : "→")} {global,2}. {levelId}");
+          if (locked)
+          {
+            AddMapHeader($"  🔒 {idx,2}. {levelId}");
+            continue;
+          }
+
+          var label = $"{(done ? "✓" : "→")} {idx,2}. {levelId}";
+          var captured = levelId;
+          AddMapButton(label, () => StartLevel(captured));
         }
       }
+    }
 
-      sb.AppendLine("\n(Demo: Devam et uses current level; full map pick in next iteration.)");
-      _mapBody!.text = sb.ToString();
-      _mapPanel.SetActive(true);
+    private void AddMapHeader(string text)
+    {
+      var go = new GameObject("Header", typeof(RectTransform), typeof(Text));
+      go.transform.SetParent(_mapListRoot, false);
+      var t = go.GetComponent<Text>();
+      t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      t.fontSize = 28;
+      t.color = KutDesignTokens.TextMuted;
+      t.text = text;
+    }
+
+    private void AddMapButton(string label, Action onClick)
+    {
+      var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+      go.transform.SetParent(_mapListRoot, false);
+      go.GetComponent<Image>().color = KutDesignTokens.AccentGold;
+      go.GetComponent<LayoutElement>().minHeight = 72;
+      var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
+      textGo.transform.SetParent(go.transform, false);
+      var txt = textGo.GetComponent<Text>();
+      txt.text = label;
+      txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      txt.fontSize = 30;
+      txt.color = KutDesignTokens.BackgroundDeep;
+      txt.alignment = TextAnchor.MiddleCenter;
+      var trt = textGo.GetComponent<RectTransform>();
+      trt.anchorMin = Vector2.zero;
+      trt.anchorMax = Vector2.one;
+      trt.offsetMin = Vector2.zero;
+      trt.offsetMax = Vector2.zero;
+      var btn = go.GetComponent<Button>();
+      btn.onClick.AddListener(() => onClick());
     }
 
     private void StartLevel(string levelId)
@@ -258,10 +374,47 @@ namespace Kut.Unity.App
       var def = LevelLoader.Parse(json);
       _levelSession = GameShell.CreateLevelSession(_save, def);
       _activeLevelId = levelId;
-      _boardView!.BindState(_levelSession.Engine.State);
+
+      _boardGrid!.SwapRequested -= OnSwapRequested;
+      _boardGrid.ActivateRequested -= OnActivateRequested;
+      _boardGrid.SwapRequested += OnSwapRequested;
+      _boardGrid.ActivateRequested += OnActivateRequested;
+      _boardGrid.Build(_levelPanel.transform, _levelSession.Engine.State);
+
       RefreshLevelHud();
       HideAll();
       _levelPanel.SetActive(true);
+    }
+
+    private void OnSwapRequested(Kut.Core.Board.GridPos a, Kut.Core.Board.GridPos b)
+    {
+      if (_levelSession == null || _boardGrid == null)
+      {
+        return;
+      }
+
+      var result = _levelSession.Submit(new SwapCommand(a, b));
+      if (result.Events.Any(e => e.EventType == "swap_reverted"))
+      {
+        ShowToast("Geçersiz hamle");
+      }
+
+      _boardGrid.Refresh(_levelSession.Engine.State);
+      RefreshLevelHud();
+      CheckLevelEnd();
+    }
+
+    private void OnActivateRequested(Kut.Core.Board.GridPos at)
+    {
+      if (_levelSession == null || _boardGrid == null)
+      {
+        return;
+      }
+
+      _levelSession.Submit(new ActivateSpecialCommand(at));
+      _boardGrid.Refresh(_levelSession.Engine.State);
+      RefreshLevelHud();
+      CheckLevelEnd();
     }
 
     private void RefreshLevelHud()
@@ -271,7 +424,9 @@ namespace Kut.Unity.App
         return;
       }
 
-      _levelHud!.text = $"{_activeLevelId} | Hamle: {_levelSession.Engine.MovesRemaining}";
+      var moves = _levelSession.Engine.MovesRemaining;
+      _levelHud!.text = $"{_activeLevelId} | Hamle: {moves}";
+      _levelHud.color = moves <= 3 ? KutDesignTokens.Danger : KutDesignTokens.TextPrimary;
       var sb = new StringBuilder();
       for (var i = 0; i < _levelSession.Objectives.Definitions.Count; i++)
       {
@@ -283,36 +438,9 @@ namespace Kut.Unity.App
       _objectivesText!.text = sb.ToString();
     }
 
-    private void Update()
-    {
-      if (_levelSession == null || _levelSession.Outcome != LevelOutcome.InProgress)
-      {
-        return;
-      }
-
-      // Demo input: tap two cells via number keys — production uses swipe on BoardView colliders.
-      if (Input.GetKeyDown(KeyCode.Alpha1))
-      {
-        TryDemoSwap(new Kut.Core.Board.GridPos(0, 0), new Kut.Core.Board.GridPos(1, 0));
-      }
-    }
-
-    private void TryDemoSwap(Kut.Core.Board.GridPos a, Kut.Core.Board.GridPos b)
-    {
-      if (_levelSession == null || _boardView == null)
-      {
-        return;
-      }
-
-      var result = _levelSession.Submit(new SwapCommand(a, b));
-      _boardView.ReplayEvents(result.Events, _levelSession.Engine.State);
-      RefreshLevelHud();
-      CheckLevelEnd();
-    }
-
     private void CheckLevelEnd()
     {
-      if (_levelSession == null || _activeLevelId == null)
+      if (_levelSession == null || _activeLevelId == null || _resultOverlay == null)
       {
         return;
       }
@@ -321,14 +449,26 @@ namespace Kut.Unity.App
       {
         GameShell.ApplyVictory(_save, _content, _activeLevelId);
         SaveStore.Save(_savePath, _save);
-        Debug.Log("*** ZAFER ***");
-        ExitLevel();
+        _resultOverlay.ShowVictory(() =>
+        {
+          ExitLevel();
+        });
       }
       else if (_levelSession.Outcome == LevelOutcome.Defeat)
       {
-        Debug.Log("--- Yenilgi ---");
-        ExitLevel();
+        _resultOverlay.ShowDefeat(
+          () => StartLevel(_activeLevelId),
+          () =>
+          {
+            ExitLevel();
+            ShowMap();
+          });
       }
+    }
+
+    private void ConfirmQuitLevel()
+    {
+      ExitLevel();
     }
 
     private void ExitLevel()
@@ -348,6 +488,7 @@ namespace Kut.Unity.App
       {
         body.text =
           $"Kalıcı ruh eşleşmen: {AnimalAssignment.DisplayNameTr(_save.AnimalId)}\n\n{AnimalBonus.DescriptionTr(_save.AnimalId)}";
+        body.color = KutDesignTokens.AnimalAccent(_save.AnimalId);
       }
 
       _animalPanel.SetActive(true);
@@ -357,7 +498,7 @@ namespace Kut.Unity.App
     {
       if (!_save.TotemTabUnlocked)
       {
-        Debug.Log("Totem kilitli (level 10).");
+        ShowToast("Totem — Bölüm 1 seviye 10");
         return;
       }
 
@@ -376,7 +517,7 @@ namespace Kut.Unity.App
     {
       if (!_save.CollectionTabUnlocked)
       {
-        Debug.Log("Koleksiyon kilitli (level 10).");
+        ShowToast("Koleksiyon — Bölüm 1 seviye 10");
         return;
       }
 
@@ -389,7 +530,7 @@ namespace Kut.Unity.App
         foreach (var item in _content.Collection.Items)
         {
           var owned = _save.UnlockedCollectionIds.Contains(item.Id);
-          sb.AppendLine($"{(owned ? "★" : "·")} {item.TitleTr}");
+          sb.AppendLine($"{(owned ? "★" : "·")} [{item.Category}] {item.TitleTr}");
         }
 
         body.text = sb.ToString();
@@ -404,6 +545,8 @@ namespace Kut.Unity.App
       RefreshHome();
       _homePanel.SetActive(true);
     }
+
+    private void ShowToast(string msg) => Debug.Log($"[Toast] {msg}");
 
     private static InputField CreateInput(Transform parent, Vector2 min, Vector2 max)
     {
