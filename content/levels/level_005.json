@@ -1,0 +1,18 @@
+{
+  "id": "level_005",
+  "chapter": 1,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 24,
+  "seed": 105,
+  "enableWindChime": true,
+  "enableSpecialCreation": true,
+  "mudCells": [
+    { "x": 3, "y": 3, "layers": 1 },
+    { "x": 4, "y": 3, "layers": 1 },
+    { "x": 3, "y": 4, "layers": 1 },
+    { "x": 4, "y": 4, "layers": 1 },
+    { "x": 2, "y": 3, "layers": 1 },
+    { "x": 5, "y": 4, "layers": 1 }
+  ],
+  "objectives": [{ "type": "clear_obstacle", "target": 6, "obstacle": "mud" }]
+}

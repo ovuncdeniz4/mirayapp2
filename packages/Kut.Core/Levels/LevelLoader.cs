@@ -22,7 +22,8 @@ namespace Kut.Core.Levels
         Chapter = root.TryGetProperty("chapter", out var ch) ? ch.GetInt32() : 0,
         Moves = root.TryGetProperty("moves", out var moves) ? moves.GetInt32() : 20,
         Seed = root.TryGetProperty("seed", out var seed) ? seed.GetInt32() : 1,
-        EnableWindChime = !root.TryGetProperty("enableWindChime", out var wc) || wc.GetBoolean()
+        EnableWindChime = !root.TryGetProperty("enableWindChime", out var wc) || wc.GetBoolean(),
+        EnableShamanDrum = root.TryGetProperty("enableShamanDrum", out var sd) && sd.GetBoolean()
       };
 
       if (root.TryGetProperty("enableSpecialCreation", out var sc))
@@ -66,7 +67,9 @@ namespace Kut.Core.Levels
           {
             Type = ParseObjectiveType(typeStr),
             Target = obj.GetProperty("target").GetInt32(),
-            Element = obj.TryGetProperty("element", out var el) ? el.GetString() : null
+            Element = obj.TryGetProperty("element", out var el) ? el.GetString() : null,
+            Obstacle = obj.TryGetProperty("obstacle", out var obs) ? obs.GetString() : null,
+            Special = obj.TryGetProperty("special", out var sp) ? sp.GetString() : null
           });
         }
       }
@@ -103,6 +106,7 @@ namespace Kut.Core.Levels
         Moves = def.Moves,
         Seed = def.Seed,
         EnableWindChime = def.EnableWindChime,
+        EnableShamanDrum = def.EnableShamanDrum,
         EnableSpecialCreation = def.EnableSpecialCreation
       };
 
@@ -122,6 +126,9 @@ namespace Kut.Core.Levels
         "make_matches" => ObjectiveType.MakeMatches,
         "cascade_depth" => ObjectiveType.CascadeDepthInTurn,
         "collect_element" => ObjectiveType.CollectElement,
+        "clear_obstacle" => ObjectiveType.ClearObstacle,
+        "create_special" => ObjectiveType.CreateSpecial,
+        "activate_special" => ObjectiveType.ActivateSpecial,
         _ => ObjectiveType.MakeMatches
       };
 
@@ -136,6 +143,28 @@ namespace Kut.Core.Levels
         }
 
         state.SetCell(pos, Cell.FromObstacle(new ObstacleInstance(ObstacleType.Mud, mud.Layers)));
+      }
+
+      foreach (var vine in def.VineCells)
+      {
+        var pos = new GridPos(vine.X, vine.Y);
+        if (!state.Size.Contains(pos))
+        {
+          throw new InvalidOperationException($"Vine cell out of bounds: ({vine.X},{vine.Y})");
+        }
+
+        state.SetCell(pos, Cell.FromObstacle(new ObstacleInstance(ObstacleType.Vine, vine.Layers)));
+      }
+
+      foreach (var stone in def.StoneCells)
+      {
+        var pos = new GridPos(stone.X, stone.Y);
+        if (!state.Size.Contains(pos))
+        {
+          throw new InvalidOperationException($"Stone cell out of bounds: ({stone.X},{stone.Y})");
+        }
+
+        state.SetCell(pos, Cell.Blocker());
       }
     }
   }

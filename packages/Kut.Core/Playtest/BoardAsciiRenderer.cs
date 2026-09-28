@@ -43,12 +43,22 @@ namespace Kut.Core.Playtest
         case CellKind.Blocker:
           return "#";
         case CellKind.Obstacle:
-          return cell.Obstacle?.Type == ObstacleType.Mud ? "M" : "O";
+          if (cell.Obstacle?.Type == ObstacleType.Mud)
+          {
+            return "M";
+          }
+
+          return cell.Obstacle?.Type == ObstacleType.Vine ? "V" : "O";
         case CellKind.Tile:
           var tile = cell.Tile!;
           if (tile.Special == SpecialType.WindChime)
           {
             return "C";
+          }
+
+          if (tile.Special == SpecialType.ShamanDrum)
+          {
+            return "D";
           }
 
           return tile.Element == Element.Water ? "W" : "E";

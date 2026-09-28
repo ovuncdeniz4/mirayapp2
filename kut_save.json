@@ -1,0 +1,10 @@
+{
+  "SchemaVersion": 1,
+  "OnboardingComplete": true,
+  "AnimalId": "bear",
+  "AnimalAssignmentVersion": 1,
+  "HighestUnlockedLevel": 1,
+  "Levels": {},
+  "TotemTabUnlocked": false,
+  "CollectionTabUnlocked": false
+}

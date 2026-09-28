@@ -71,6 +71,27 @@ namespace Kut.Core.Match
       flushRun();
     }
 
+    public static bool TryFindLineOfFive(BoardState board, HashSet<GridPos> cluster, out LineOrientation orientation)
+    {
+      orientation = LineOrientation.Horizontal;
+      foreach (var pos in cluster)
+      {
+        if (IsStraightRun(board, cluster, pos, horizontal: true, length: 5))
+        {
+          orientation = LineOrientation.Horizontal;
+          return true;
+        }
+
+        if (IsStraightRun(board, cluster, pos, horizontal: false, length: 5))
+        {
+          orientation = LineOrientation.Vertical;
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     public static bool TryFindLineOfFour(BoardState board, HashSet<GridPos> cluster, out LineOrientation orientation)
     {
       orientation = LineOrientation.Horizontal;

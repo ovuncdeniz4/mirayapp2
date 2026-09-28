@@ -10,6 +10,8 @@ namespace Kut.Core.Save
     public int AnimalAssignmentVersion { get; set; } = 1;
     public int HighestUnlockedLevel { get; set; } = 1;
     public Dictionary<string, LevelSaveEntry> Levels { get; set; } = new Dictionary<string, LevelSaveEntry>();
+    public bool TotemTabUnlocked { get; set; }
+    public bool CollectionTabUnlocked { get; set; }
   }
 
   public sealed class LevelSaveEntry

@@ -11,8 +11,10 @@ dotnet run --project tools/Kut.Playtest -- --demo
 dotnet run --project tools/Kut.Playtest -- --slice
 ```
 
+**Vertical slice (`--slice`):** onboarding → permanent spirit animal → home / map → **Chapter 1 levels 1–10** (Wind Chime, mud, stone, vine, Shaman Drum, shrine finale). In-level commands: `swap x1 y1 x2 y2`, `activate x y` (specials), `board`, `quit`. Completing **level_010** unlocks totem/collection tabs in save data.
+
 Interactive terminal board: `dotnet run --project tools/Kut.Playtest`  
-Legend: `E` earth, `W` water, `M` mud, `C` wind chime, `·` empty
+Legend: `E` earth, `W` water, `M` mud, `V` vine, `C` wind chime, `D` shaman drum, `#` stone, `·` empty
 
 ## Unity shell
 

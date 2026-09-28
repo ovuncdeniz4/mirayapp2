@@ -11,7 +11,11 @@ namespace Kut.Playtest
 {
   internal static class VerticalSliceApp
   {
-    private static readonly string[] LevelIds = { "level_001", "level_002", "level_003" };
+    private static readonly string[] LevelIds =
+    {
+      "level_001", "level_002", "level_003", "level_004", "level_005",
+      "level_006", "level_007", "level_008", "level_009", "level_010"
+    };
 
     public static int Run(string[] args)
     {
@@ -30,6 +34,11 @@ namespace Kut.Playtest
         Console.WriteLine("=== KUT — Ana Ekran ===");
         Console.WriteLine($"Ruh hayvanın: {AnimalAssignment.DisplayNameTr(save.AnimalId)} ({save.AnimalId})");
         Console.WriteLine($"Harita: seviye 1–{save.HighestUnlockedLevel} açık");
+        if (save.TotemTabUnlocked)
+        {
+          Console.WriteLine("(Totem ve Koleksiyon açıldı — Bölüm 1 tamamlandı)");
+        }
+
         Console.WriteLine("[1] Devam et  [2] Harita  [3] Hayvan  [4] Çıkış");
         Console.Write("> ");
         var choice = Console.ReadLine()?.Trim();
@@ -99,7 +108,7 @@ namespace Kut.Playtest
 
       while (session.Outcome == LevelOutcome.InProgress)
       {
-        Console.Write("swap x1 y1 x2 y2 | board | quit > ");
+        Console.Write("swap x1 y1 x2 y2 | activate x y | board | quit > ");
         var line = Console.ReadLine();
         if (line == null || line.StartsWith("quit", StringComparison.OrdinalIgnoreCase))
         {
@@ -121,6 +130,16 @@ namespace Kut.Playtest
           PrintObjectives(session);
           Console.WriteLine(BoardAsciiRenderer.Render(session.Engine.State));
           Console.WriteLine($"moves: {session.Engine.MovesRemaining}");
+          continue;
+        }
+
+        if (parts.Length == 3 && parts[0] == "activate" &&
+            int.TryParse(parts[1], out var ax) && int.TryParse(parts[2], out var ay))
+        {
+          session.Submit(new ActivateSpecialCommand(new Kut.Core.Board.GridPos(ax, ay)));
+          PrintObjectives(session);
+          Console.WriteLine(BoardAsciiRenderer.Render(session.Engine.State));
+          Console.WriteLine($"moves: {session.Engine.MovesRemaining}");
         }
       }
 
@@ -132,6 +151,13 @@ namespace Kut.Playtest
         if (idx + 1 < LevelIds.Length && save.HighestUnlockedLevel < idx + 2)
         {
           save.HighestUnlockedLevel = idx + 2;
+        }
+
+        if (def.Id == "level_010")
+        {
+          save.TotemTabUnlocked = true;
+          save.CollectionTabUnlocked = true;
+          Console.WriteLine("*** Totem uyanışı — meta sekmeleri açıldı (CLI) ***");
         }
 
         SaveStore.Save(savePath, save);

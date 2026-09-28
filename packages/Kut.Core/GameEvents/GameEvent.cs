@@ -143,6 +143,19 @@ namespace Kut.Core.GameEvents
     public int LayersRemaining { get; }
   }
 
+  public sealed class VineBrokenEvent : GameEvent
+  {
+    public VineBrokenEvent(GridPos at, int hpRemaining)
+    {
+      EventType = "vine_broken";
+      At = at;
+      HpRemaining = hpRemaining;
+    }
+
+    public GridPos At { get; }
+    public int HpRemaining { get; }
+  }
+
   public sealed class GravityStepEvent : GameEvent
   {
     public GravityStepEvent(GridPos from, GridPos to)

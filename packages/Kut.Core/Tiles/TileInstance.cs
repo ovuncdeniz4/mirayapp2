@@ -7,6 +7,7 @@ namespace Kut.Core.Tiles
     public string MatchGroup { get; }
     public SpecialType Special { get; set; }
     public LineOrientation? ChimeOrientation { get; set; }
+    public string? ResonanceMatchGroup { get; set; }
 
     public TileInstance(string tileId, Element element, string matchGroup)
     {
@@ -23,7 +24,8 @@ namespace Kut.Core.Tiles
       var copy = new TileInstance(TileId, Element, MatchGroup)
       {
         Special = Special,
-        ChimeOrientation = ChimeOrientation
+        ChimeOrientation = ChimeOrientation,
+        ResonanceMatchGroup = ResonanceMatchGroup
       };
       return copy;
     }

@@ -13,8 +13,11 @@ namespace Kut.Core.Levels
     public int Seed { get; set; } = 1;
     public List<string> SpawnTable { get; set; } = new List<string>();
     public bool EnableWindChime { get; set; } = true;
+    public bool EnableShamanDrum { get; set; } = false;
     public bool EnableSpecialCreation { get; set; } = true;
     public List<MudCellDefinition> MudCells { get; set; } = new List<MudCellDefinition>();
+    public List<MudCellDefinition> VineCells { get; set; } = new List<MudCellDefinition>();
+    public List<GridCellDefinition> StoneCells { get; set; } = new List<GridCellDefinition>();
     public List<ObjectiveDefinition> Objectives { get; set; } = new List<ObjectiveDefinition>();
   }
 
@@ -23,5 +26,11 @@ namespace Kut.Core.Levels
     public int X { get; set; }
     public int Y { get; set; }
     public int Layers { get; set; } = 1;
+  }
+
+  public sealed class GridCellDefinition
+  {
+    public int X { get; set; }
+    public int Y { get; set; }
   }
 }

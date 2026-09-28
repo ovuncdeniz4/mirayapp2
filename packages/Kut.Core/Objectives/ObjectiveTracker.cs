@@ -41,6 +41,55 @@ namespace Kut.Core.Objectives
           case ElementCollectedEvent collected:
             RegisterElementCollected(collected.Element, collected.Count);
             break;
+          case MudCleansedEvent mud when mud.LayersRemaining <= 0:
+            IncrementObstacle("mud", 1);
+            break;
+          case VineBrokenEvent vine when vine.HpRemaining <= 0:
+            IncrementObstacle("vine", 1);
+            break;
+          case SpecialCreatedEvent created:
+            IncrementSpecialObjective(ObjectiveType.CreateSpecial, created.Special);
+            break;
+          case SpecialActivatedEvent activated:
+            IncrementSpecialObjective(ObjectiveType.ActivateSpecial, activated.Special);
+            break;
+        }
+      }
+    }
+
+    private static SpecialType ParseSpecial(string? name) =>
+      name switch
+      {
+        "wind_chime" => SpecialType.WindChime,
+        "shaman_drum" => SpecialType.ShamanDrum,
+        _ => SpecialType.None
+      };
+
+    private void IncrementSpecialObjective(ObjectiveType type, SpecialType special)
+    {
+      for (var i = 0; i < _definitions.Count; i++)
+      {
+        if (_definitions[i].Type != type)
+        {
+          continue;
+        }
+
+        var expected = ParseSpecial(_definitions[i].Special);
+        if (expected == SpecialType.None || expected == special)
+        {
+          _progress[i]++;
+        }
+      }
+    }
+
+    private void IncrementObstacle(string obstacle, int amount)
+    {
+      for (var i = 0; i < _definitions.Count; i++)
+      {
+        if (_definitions[i].Type == ObjectiveType.ClearObstacle &&
+            (_definitions[i].Obstacle ?? "mud") == obstacle)
+        {
+          _progress[i] += amount;
         }
       }
     }

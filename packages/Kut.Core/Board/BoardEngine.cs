@@ -94,13 +94,26 @@ namespace Kut.Core.Board
     private void ApplyActivateSpecial(ActivateSpecialCommand activate, List<GameEvent> events)
     {
       var cell = State.GetCell(activate.At);
-      if (cell.Kind != CellKind.Tile || cell.Tile?.Special != SpecialType.WindChime)
+      if (cell.Kind != CellKind.Tile || cell.Tile == null)
       {
         return;
       }
 
-      WindChimeRules.Activate(State, activate.At, events, out var toClear);
-      ClearTilesWithReactions(toClear, events);
+      if (cell.Tile.Special == SpecialType.WindChime)
+      {
+        WindChimeRules.Activate(State, activate.At, events, out var toClear);
+        ClearTilesWithReactions(toClear, events);
+      }
+      else if (cell.Tile.Special == SpecialType.ShamanDrum)
+      {
+        ShamanDrumRules.Activate(State, activate.At, events, out var toClear);
+        ClearTilesWithReactions(toClear, events);
+      }
+      else
+      {
+        return;
+      }
+
       ResolveUntilStable(events);
     }
 
@@ -127,13 +140,27 @@ namespace Kut.Core.Board
     private void ProcessMatchClear(HashSet<GridPos> matched, List<GameEvent> events)
     {
       GridPos? specialSpawn = null;
-      LineOrientation? chimeOrientation = null;
+      LineOrientation? lineOrientation = null;
+      SpecialCreationKind creationKind = SpecialCreationKind.None;
+      string resonanceGroup = "";
 
-      if (Rules.EnableSpecialCreation && Rules.EnableWindChime &&
-          SpecialCreationResolver.TryResolveWindChime(State, matched, _lastSwapDestination, out var spawn, out var orientation))
+      if (Rules.EnableSpecialCreation)
       {
-        specialSpawn = spawn;
-        chimeOrientation = orientation;
+        creationKind = SpecialCreationResolver.Resolve(
+          State,
+          matched,
+          _lastSwapDestination,
+          Rules.EnableShamanDrum,
+          Rules.EnableWindChime,
+          out var spawn,
+          out var orientation,
+          out var resonance);
+        if (creationKind != SpecialCreationKind.None)
+        {
+          specialSpawn = spawn;
+          lineOrientation = orientation;
+          resonanceGroup = resonance;
+        }
       }
 
       TileInstance? spawnBase = null;
@@ -145,13 +172,21 @@ namespace Kut.Core.Board
       var toClear = matched.Where(p => !specialSpawn.HasValue || p != specialSpawn.Value).ToList();
       ClearTilesWithReactions(toClear, events);
 
-      if (specialSpawn.HasValue)
+      if (specialSpawn.HasValue && creationKind == SpecialCreationKind.WindChime)
       {
         var tile = spawnBase ?? TileRegistry.Create("earth_moss");
         tile.Special = SpecialType.WindChime;
-        tile.ChimeOrientation = chimeOrientation;
+        tile.ChimeOrientation = lineOrientation;
         State.SetCell(specialSpawn.Value, Cell.FromTile(tile));
-        events.Add(new SpecialCreatedEvent(specialSpawn.Value, SpecialType.WindChime, chimeOrientation));
+        events.Add(new SpecialCreatedEvent(specialSpawn.Value, SpecialType.WindChime, lineOrientation));
+      }
+      else if (specialSpawn.HasValue && creationKind == SpecialCreationKind.ShamanDrum)
+      {
+        var tile = spawnBase ?? TileRegistry.Create("earth_moss");
+        tile.Special = SpecialType.ShamanDrum;
+        tile.ResonanceMatchGroup = string.IsNullOrEmpty(resonanceGroup) ? tile.MatchGroup : resonanceGroup;
+        State.SetCell(specialSpawn.Value, Cell.FromTile(tile));
+        events.Add(new SpecialCreatedEvent(specialSpawn.Value, SpecialType.ShamanDrum, lineOrientation));
       }
     }
 
@@ -163,6 +198,7 @@ namespace Kut.Core.Board
       }
 
       var waterSources = new List<GridPos>();
+      var earthSources = new List<GridPos>();
       var earthCount = 0;
       var waterCount = 0;
       events.Add(new TilesClearedEvent(positions));
@@ -182,6 +218,7 @@ namespace Kut.Core.Board
         }
         else if (cell.Tile.Element == Element.Earth)
         {
+          earthSources.Add(pos);
           earthCount++;
         }
 
@@ -199,6 +236,7 @@ namespace Kut.Core.Board
       }
 
       ElementReactionSystem.ApplyWaterMudReactions(State, waterSources, events);
+      ElementReactionSystem.ApplyEarthVineReactions(State, earthSources, events);
     }
   }
 }
