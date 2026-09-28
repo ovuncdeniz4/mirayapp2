@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using Kut.Core.Board;
 using Kut.Core.Obstacles;
+using Kut.Core.Objectives;
 using Kut.Core.Tiles;
 
 namespace Kut.Core.Levels
@@ -23,6 +24,15 @@ namespace Kut.Core.Levels
         Seed = root.TryGetProperty("seed", out var seed) ? seed.GetInt32() : 1,
         EnableWindChime = !root.TryGetProperty("enableWindChime", out var wc) || wc.GetBoolean()
       };
+
+      if (root.TryGetProperty("enableSpecialCreation", out var sc))
+      {
+        def.EnableSpecialCreation = sc.GetBoolean();
+      }
+      else
+      {
+        def.EnableSpecialCreation = def.EnableWindChime;
+      }
 
       if (root.TryGetProperty("boardSize", out var size))
       {
@@ -45,6 +55,20 @@ namespace Kut.Core.Levels
       if (def.SpawnTable.Count == 0)
       {
         def.SpawnTable.AddRange(TileRegistry.DefaultSpawnTable);
+      }
+
+      if (root.TryGetProperty("objectives", out var objectives) && objectives.ValueKind == JsonValueKind.Array)
+      {
+        foreach (var obj in objectives.EnumerateArray())
+        {
+          var typeStr = obj.GetProperty("type").GetString() ?? "";
+          def.Objectives.Add(new ObjectiveDefinition
+          {
+            Type = ParseObjectiveType(typeStr),
+            Target = obj.GetProperty("target").GetInt32(),
+            Element = obj.TryGetProperty("element", out var el) ? el.GetString() : null
+          });
+        }
       }
 
       if (root.TryGetProperty("mudCells", out var mudCells) && mudCells.ValueKind == JsonValueKind.Array)
@@ -79,7 +103,7 @@ namespace Kut.Core.Levels
         Moves = def.Moves,
         Seed = def.Seed,
         EnableWindChime = def.EnableWindChime,
-        EnableSpecialCreation = def.EnableWindChime
+        EnableSpecialCreation = def.EnableSpecialCreation
       };
 
       var engine = new BoardEngine(state, rules, def.SpawnTable);
@@ -91,6 +115,15 @@ namespace Kut.Core.Levels
     {
       return CreateEngine(LoadFromFile(path));
     }
+
+    private static ObjectiveType ParseObjectiveType(string type) =>
+      type switch
+      {
+        "make_matches" => ObjectiveType.MakeMatches,
+        "cascade_depth" => ObjectiveType.CascadeDepthInTurn,
+        "collect_element" => ObjectiveType.CollectElement,
+        _ => ObjectiveType.MakeMatches
+      };
 
     private static void ApplyObstacles(BoardState state, LevelDefinition def)
     {

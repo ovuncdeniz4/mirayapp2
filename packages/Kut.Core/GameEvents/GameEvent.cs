@@ -63,6 +63,19 @@ namespace Kut.Core.GameEvents
     public IReadOnlyList<GridPos> Cells { get; }
   }
 
+  public sealed class ElementCollectedEvent : GameEvent
+  {
+    public ElementCollectedEvent(Tiles.Element element, int count)
+    {
+      EventType = "element_collected";
+      Element = element;
+      Count = count;
+    }
+
+    public Tiles.Element Element { get; }
+    public int Count { get; }
+  }
+
   public sealed class SpecialCreatedEvent : GameEvent
   {
     public SpecialCreatedEvent(GridPos at, SpecialType special, LineOrientation? orientation)

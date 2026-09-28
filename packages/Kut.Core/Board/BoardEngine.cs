@@ -163,6 +163,8 @@ namespace Kut.Core.Board
       }
 
       var waterSources = new List<GridPos>();
+      var earthCount = 0;
+      var waterCount = 0;
       events.Add(new TilesClearedEvent(positions));
 
       foreach (var pos in positions)
@@ -176,9 +178,24 @@ namespace Kut.Core.Board
         if (cell.Tile.Element == Element.Water)
         {
           waterSources.Add(pos);
+          waterCount++;
+        }
+        else if (cell.Tile.Element == Element.Earth)
+        {
+          earthCount++;
         }
 
         State.SetCell(pos, Cell.Empty());
+      }
+
+      if (earthCount > 0)
+      {
+        events.Add(new ElementCollectedEvent(Element.Earth, earthCount));
+      }
+
+      if (waterCount > 0)
+      {
+        events.Add(new ElementCollectedEvent(Element.Water, waterCount));
       }
 
       ElementReactionSystem.ApplyWaterMudReactions(State, waterSources, events);

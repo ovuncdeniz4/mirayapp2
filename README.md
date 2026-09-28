@@ -8,6 +8,7 @@ Stage A (technical prototype): deterministic **Kut.Core** Match-3 engine + Unity
 export PATH="$HOME/.dotnet:$PATH"
 dotnet test
 dotnet run --project tools/Kut.Playtest -- --demo
+dotnet run --project tools/Kut.Playtest -- --slice
 ```
 
 Interactive terminal board: `dotnet run --project tools/Kut.Playtest`  

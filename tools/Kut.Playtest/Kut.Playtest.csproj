@@ -10,6 +10,6 @@
     <ProjectReference Include="..\..\packages\Kut.Core\Kut.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\content\levels\level_prototype.json" Link="content\levels\level_prototype.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\content\levels\*.json" Link="content\levels\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

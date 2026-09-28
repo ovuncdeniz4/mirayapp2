@@ -13,6 +13,11 @@ namespace Kut.Playtest
   {
     private static int Main(string[] args)
     {
+      if (args.Any(a => a == "--slice"))
+      {
+        return VerticalSliceApp.Run(args);
+      }
+
       var levelPath = ResolveLevelPath(args);
       var engine = LevelLoader.CreateEngineFromFile(levelPath);
       Console.WriteLine($"KUT playtest — level: {Path.GetFileName(levelPath)} | moves: {engine.MovesRemaining}");

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Kut.Core.Objectives;
 
 namespace Kut.Core.Levels
 {
@@ -12,7 +13,9 @@ namespace Kut.Core.Levels
     public int Seed { get; set; } = 1;
     public List<string> SpawnTable { get; set; } = new List<string>();
     public bool EnableWindChime { get; set; } = true;
+    public bool EnableSpecialCreation { get; set; } = true;
     public List<MudCellDefinition> MudCells { get; set; } = new List<MudCellDefinition>();
+    public List<ObjectiveDefinition> Objectives { get; set; } = new List<ObjectiveDefinition>();
   }
 
   public sealed class MudCellDefinition
