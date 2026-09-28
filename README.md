@@ -2,12 +2,16 @@
 
 Stage A (technical prototype): deterministic **Kut.Core** Match-3 engine + Unity **6.3 LTS** shell (**editor 6.3.3**).
 
-## Kut.Core
+## Kut.Core (no Unity required)
 
 ```bash
 export PATH="$HOME/.dotnet:$PATH"
 dotnet test
+dotnet run --project tools/Kut.Playtest -- --demo
 ```
+
+Interactive terminal board: `dotnet run --project tools/Kut.Playtest`  
+Legend: `E` earth, `W` water, `M` mud, `C` wind chime, `·` empty
 
 ## Unity shell
 

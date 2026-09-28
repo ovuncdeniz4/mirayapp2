@@ -30,13 +30,32 @@ namespace Kut.Core.Board
       for (var attempt = 0; attempt < maxAttempts; attempt++)
       {
         FillEmptyTiles(board, rng, spawnTable);
-        if (MatchDetection.FindMatchedCells(board).Count == 0)
+        if (MatchDetection.FindMatchedCells(board).Count == 0 && CountTiles(board) > 0)
         {
           return;
         }
 
         ClearTilesOnly(board);
       }
+
+      FillEmptyTiles(board, rng, spawnTable);
+    }
+
+    private static int CountTiles(BoardState board)
+    {
+      var count = 0;
+      for (var x = 0; x < board.Size.Width; x++)
+      {
+        for (var y = 0; y < board.Size.Height; y++)
+        {
+          if (board.GetCell(new GridPos(x, y)).Kind == CellKind.Tile)
+          {
+            count++;
+          }
+        }
+      }
+
+      return count;
     }
 
     private static void FillEmptyTiles(BoardState board, DeterministicRandom rng, IReadOnlyList<string> spawnTable)

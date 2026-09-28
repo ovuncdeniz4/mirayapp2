@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Kut.Core\Kut.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Content\level_prototype.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

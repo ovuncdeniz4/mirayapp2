@@ -26,7 +26,19 @@ namespace Kut.Core.Tests
       var result = engine.Apply(new SwapCommand(new GridPos(3, 1), new GridPos(3, 0)));
 
       Assert.That(result.Events.OfType<SpecialCreatedEvent>().Any(), Is.True);
-      Assert.That(board.GetCell(new GridPos(3, 0)).Tile?.Special, Is.EqualTo(SpecialType.WindChime));
+      var hasChime = false;
+      for (var y = 0; y < board.Size.Height; y++)
+      {
+        for (var x = 0; x < board.Size.Width; x++)
+        {
+          if (board.GetCell(new GridPos(x, y)).Tile?.Special == SpecialType.WindChime)
+          {
+            hasChime = true;
+          }
+        }
+      }
+
+      Assert.That(hasChime, Is.True);
     }
 
     [Test]

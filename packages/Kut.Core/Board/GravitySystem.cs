@@ -10,14 +10,14 @@ namespace Kut.Core.Board
     {
       for (var x = 0; x < board.Size.Width; x++)
       {
-        var writeY = 0;
-        for (var y = 0; y < board.Size.Height; y++)
+        var writeY = board.Size.Height - 1;
+        for (var y = board.Size.Height - 1; y >= 0; y--)
         {
           var pos = new GridPos(x, y);
           var cell = board.GetCell(pos);
           if (cell.Kind == CellKind.Blocker || cell.Kind == CellKind.Obstacle)
           {
-            writeY = y + 1;
+            writeY = y - 1;
             continue;
           }
 
@@ -31,7 +31,7 @@ namespace Kut.Core.Board
               events.Add(new GravityStepEvent(pos, target));
             }
 
-            writeY++;
+            writeY--;
           }
         }
       }

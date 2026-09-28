@@ -32,13 +32,20 @@ namespace Kut.Core.Board
 
     public static BoardEngine CreatePrototype()
     {
-      var size = new BoardSize(8, 8);
-      var state = new BoardState(size);
-      PrototypeLevel.ApplyTo(state);
-      var rules = new LevelRules { Moves = 30, Seed = 42, EnableWindChime = true };
-      var engine = new BoardEngine(state, rules);
-      BoardGenerator.EnsureValidStart(state, engine._rng, engine._spawnTable);
-      return engine;
+      var def = new LevelDefinition
+      {
+        Id = "level_prototype",
+        BoardWidth = 8,
+        BoardHeight = 8,
+        Moves = 30,
+        Seed = 42,
+        EnableWindChime = true
+      };
+      def.MudCells.Add(new MudCellDefinition { X = 3, Y = 3 });
+      def.MudCells.Add(new MudCellDefinition { X = 4, Y = 3 });
+      def.MudCells.Add(new MudCellDefinition { X = 3, Y = 4 });
+      def.MudCells.Add(new MudCellDefinition { X = 4, Y = 4 });
+      return LevelLoader.CreateEngine(def);
     }
 
     public CommandResult Apply(IGameCommand command)

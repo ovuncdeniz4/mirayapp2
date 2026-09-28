@@ -1,0 +1,15 @@
+{
+  "id": "level_prototype",
+  "chapter": 0,
+  "boardSize": { "w": 8, "h": 8 },
+  "moves": 30,
+  "seed": 42,
+  "spawnTable": ["earth_moss", "water_drop"],
+  "enableWindChime": true,
+  "mudCells": [
+    { "x": 3, "y": 3, "layers": 1 },
+    { "x": 4, "y": 3, "layers": 1 },
+    { "x": 3, "y": 4, "layers": 1 },
+    { "x": 4, "y": 4, "layers": 1 }
+  ]
+}
