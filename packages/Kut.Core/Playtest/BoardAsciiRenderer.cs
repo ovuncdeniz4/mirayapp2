@@ -61,7 +61,18 @@ namespace Kut.Core.Playtest
             return "D";
           }
 
-          return tile.Element == Element.Water ? "W" : "E";
+          if (tile.Special == SpecialType.FireBomb)
+          {
+            return "B";
+          }
+
+          return tile.Element switch
+          {
+            Element.Water => "W",
+            Element.Fire => "F",
+            Element.Air => "A",
+            _ => "E"
+          };
         default:
           return "?";
       }

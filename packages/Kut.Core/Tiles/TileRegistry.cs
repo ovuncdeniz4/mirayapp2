@@ -7,7 +7,9 @@ namespace Kut.Core.Tiles
     private static readonly Dictionary<string, TileInstance> Prototypes = new Dictionary<string, TileInstance>
     {
       ["earth_moss"] = new TileInstance("earth_moss", Element.Earth, "earth"),
-      ["water_drop"] = new TileInstance("water_drop", Element.Water, "water")
+      ["water_drop"] = new TileInstance("water_drop", Element.Water, "water"),
+      ["fire_ember"] = new TileInstance("fire_ember", Element.Fire, "fire"),
+      ["wind_gust"] = new TileInstance("wind_gust", Element.Air, "wind")
     };
 
     public static TileInstance Create(string tileId)

@@ -36,7 +36,17 @@ When a tile is cleared, its **former cell** is the reaction source:
 
 - **Wind Chime:** L/T match creation (when enabled); tap/`activate` clears row+column cross.
 - **Shaman Drum:** straight line of 5 (when enabled); `activate` clears tiles matching its resonance group.
-- **Fire Bomb:** Chapter 2+ (not in Ch1 data).
+- **Fire Bomb:** Chapter 2+ (`enableFireBomb`); 2×2 match spawns bomb; activate clears 3×3 (costs a move).
+
+## Element reactions (Chapter 2)
+
+- **Fire** cleared → burns adjacent **mud** and breaks adjacent **vine** (same adjacency rules as water/earth).
+
+## Meta (CLI)
+
+- `content/chapters.json` — chapter / level order and gates.
+- `content/collection/catalog.json` — relic unlocks on level complete.
+- Save schema v2: `TotemTier`, `UnlockedCollectionIds`, `Chapter2Complete`.
 
 ## Save model
 

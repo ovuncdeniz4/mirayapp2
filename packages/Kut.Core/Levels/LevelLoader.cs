@@ -23,7 +23,8 @@ namespace Kut.Core.Levels
         Moves = root.TryGetProperty("moves", out var moves) ? moves.GetInt32() : 20,
         Seed = root.TryGetProperty("seed", out var seed) ? seed.GetInt32() : 1,
         EnableWindChime = !root.TryGetProperty("enableWindChime", out var wc) || wc.GetBoolean(),
-        EnableShamanDrum = root.TryGetProperty("enableShamanDrum", out var sd) && sd.GetBoolean()
+        EnableShamanDrum = root.TryGetProperty("enableShamanDrum", out var sd) && sd.GetBoolean(),
+        EnableFireBomb = root.TryGetProperty("enableFireBomb", out var fb) && fb.GetBoolean()
       };
 
       if (root.TryGetProperty("enableSpecialCreation", out var sc))
@@ -98,6 +99,7 @@ namespace Kut.Core.Levels
         Seed = def.Seed,
         EnableWindChime = def.EnableWindChime,
         EnableShamanDrum = def.EnableShamanDrum,
+        EnableFireBomb = def.EnableFireBomb,
         EnableSpecialCreation = def.EnableSpecialCreation
       };
 

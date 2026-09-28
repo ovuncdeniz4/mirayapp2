@@ -13,7 +13,9 @@ namespace Kut.Core.Save
       }
 
       var json = File.ReadAllText(path);
-      return JsonSerializer.Deserialize<SaveData>(json) ?? new SaveData();
+      var data = JsonSerializer.Deserialize<SaveData>(json) ?? new SaveData();
+      Migrate(data);
+      return data;
     }
 
     public static void Save(string path, SaveData data)
@@ -26,6 +28,23 @@ namespace Kut.Core.Save
 
       var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
       File.WriteAllText(path, json);
+    }
+
+    private static void Migrate(SaveData data)
+    {
+      if (data.SchemaVersion >= 2)
+      {
+        return;
+      }
+
+      data.UnlockedCollectionIds ??= new System.Collections.Generic.List<string>();
+
+      if (data.TotemTabUnlocked && data.TotemTier < 1)
+      {
+        data.TotemTier = 1;
+      }
+
+      data.SchemaVersion = 2;
     }
   }
 }

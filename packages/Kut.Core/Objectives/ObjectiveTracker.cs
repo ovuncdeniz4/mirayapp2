@@ -62,6 +62,7 @@ namespace Kut.Core.Objectives
       {
         "wind_chime" => SpecialType.WindChime,
         "shaman_drum" => SpecialType.ShamanDrum,
+        "fire_bomb" => SpecialType.FireBomb,
         _ => SpecialType.None
       };
 
@@ -96,7 +97,13 @@ namespace Kut.Core.Objectives
 
     public void RegisterElementCollected(Element element, int count)
     {
-      var name = element == Element.Water ? "water" : "earth";
+      var name = element switch
+      {
+        Element.Water => "water",
+        Element.Fire => "fire",
+        Element.Air => "wind",
+        _ => "earth"
+      };
       for (var i = 0; i < _definitions.Count; i++)
       {
         if (_definitions[i].Type == ObjectiveType.CollectElement && _definitions[i].Element == name)
