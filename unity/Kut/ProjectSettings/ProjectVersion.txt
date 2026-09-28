@@ -1,0 +1,2 @@
+m_EditorVersion: 6000.3.3f1
+m_EditorVersionWithRevision: 6000.3.3f1 (placeholder — use Unity Hub 6.3 LTS 6.3.3)

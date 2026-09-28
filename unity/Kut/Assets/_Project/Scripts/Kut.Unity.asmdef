@@ -1,0 +1,11 @@
+{
+  "name": "Kut.Unity",
+  "rootNamespace": "Kut.Unity",
+  "references": [],
+  "precompiledReferences": [
+    "Kut.Core.dll"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false
+}
