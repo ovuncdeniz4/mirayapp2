@@ -4,7 +4,7 @@
 
 | Your Mac | Unity Editor |
 |----------|----------------|
-| **macOS Monterey 12** (e.g. MacBook Air 2015) | **2022.3 LTS** — repo pinned **`2022.3.62f1`**; any **2022.3.x** from Hub is OK |
+| **macOS Monterey 12** (e.g. MacBook Air 2015) | **`2022.3.62f1`** only for **Personal** — see [license note](#personal-license-not-extended-lts) below |
 | **macOS Ventura 13+** | Optional **Unity 6.3 LTS** (see [`architecture.md`](architecture.md)); primary repo target is **2022.3** for older Macs |
 
 GitHub Desktop is **not** required — only the cloned repo folder.
@@ -24,7 +24,7 @@ GitHub Desktop is **not** required — only the cloned repo folder.
 ```
 
 2. Hub → **Add** → select folder **`unity/Kut`** (open with **2022.3 LTS**).
-3. First open may take several minutes (import art + scripts). If Hub shows a **patch mismatch** (e.g. you installed 2022.3.76f1), allow Unity to **retarget** the project — stay on 2022.3 LTS.
+3. First open may take several minutes (import art + scripts). Open the project with **`2022.3.62f1`** (not Extended LTS builds).
 4. Menu **KUT → Create Main Scene And Open** (creates `Assets/_Project/Scenes/Main.unity` with **`KutAppBootstrap`**).
 5. **Play**
 
@@ -43,6 +43,21 @@ UI is built at runtime per [`ux-ui-spec.md`](ux-ui-spec.md). Sprites: [`ART_DIRE
 ## Architecture
 
 **Input → LevelSession / GameplaySession → Kut.Core → events → UI** (presentation never mutates engine state).
+
+## Personal license — not Extended LTS
+
+Unity **Personal / Pro** cannot run **Extended LTS** installers (e.g. **2022.3.63+**, **74f1**, **76f1** — often labeled **“3-year LTS”**). You will see:
+
+> *This build of Unity 2022 is part of an Extended LTS release, which requires Unity Industry or Enterprise.*
+
+**Fix (Monterey + Personal):**
+
+1. Hub → **Installs** → remove the Extended LTS 2022 build if installed.
+2. Install **`2022.3.62f1`** — [Download Archive](https://unity.com/releases/editor/archive) → **2022.3.62f1** → **macOS Intel** (2015 MacBook Air).
+3. Hub **3.10+** may list only license-compatible builds under **Installs**; if Hub still offers a too-new 2022 patch, use **Visit Download Archive** from the error dialog or the link above.
+4. Open `unity/Kut` with **2022.3.62f1** (repo `ProjectVersion.txt` matches this pin).
+
+Public **2022.3 LTS** for Personal ended at **62f1** (May 2025); later patches are Enterprise/Industry only.
 
 ## Troubleshooting
 
