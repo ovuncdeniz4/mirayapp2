@@ -23,7 +23,7 @@ Input (swap / activate)
 | `tools/Kut.Playtest` | Terminal demo + vertical slice (`--slice`) |
 | `tools/Kut.LevelValidator` | Validates all JSON under `content/levels` |
 | `content/levels` | Chapter level data |
-| `unity/Kut` | Unity 6.3 LTS shell; loads `Kut.Core.dll` from `Assets/Plugins` |
+| `unity/Kut` | **Unity 2022.3 LTS** shell (Monterey+); optional Unity 6.3 on Ventura+; loads `Kut.Core.dll` from `Assets/Plugins` |
 
 ## Element reactions (Chapter 1)
 
