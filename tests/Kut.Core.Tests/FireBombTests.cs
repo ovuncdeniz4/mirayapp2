@@ -45,7 +45,57 @@ namespace Kut.Core.Tests
     }
 
     [Test]
-    public void ActivateFireBombClearsThreeByThreeArea()
+    public void ActivateFireBombClearsManhattanRadiusTwoThirteenCellsOnFullBoard()
+    {
+      var board = new BoardState(new BoardSize(8, 8));
+      for (var x = 0; x < 8; x++)
+      {
+        for (var y = 0; y < 8; y++)
+        {
+          if (x == 4 && y == 4)
+          {
+            var bomb = TileRegistry.Create("fire_ember");
+            bomb.Special = SpecialType.FireBomb;
+            board.SetCell(new GridPos(x, y), Cell.FromTile(bomb));
+          }
+          else
+          {
+            board.SetCell(new GridPos(x, y), Cell.FromTile(TileRegistry.Create("earth_moss")));
+          }
+        }
+      }
+
+      var events = new System.Collections.Generic.List<GameEvent>();
+      Kut.Core.Specials.FireBombRules.Activate(board, new GridPos(4, 4), events, out var toClear);
+      Assert.That(events.OfType<AreaClearEvent>().Any(e => e.Radius == 2), Is.True);
+      Assert.That(toClear.Count, Is.EqualTo(13));
+
+      var engineBoard = new BoardState(new BoardSize(8, 8));
+      for (var x = 0; x < 8; x++)
+      {
+        for (var y = 0; y < 8; y++)
+        {
+          if (x == 4 && y == 4)
+          {
+            var bomb = TileRegistry.Create("fire_ember");
+            bomb.Special = SpecialType.FireBomb;
+            engineBoard.SetCell(new GridPos(x, y), Cell.FromTile(bomb));
+          }
+          else
+          {
+            engineBoard.SetCell(new GridPos(x, y), Cell.FromTile(TileRegistry.Create("earth_moss")));
+          }
+        }
+      }
+
+      var engine = new BoardEngine(engineBoard, new LevelRules { Moves = 5, Seed = 1 });
+      var result = engine.Apply(new ActivateSpecialCommand(new GridPos(4, 4)));
+      Assert.That(result.Events.OfType<SpecialActivatedEvent>().Any(e => e.Special == SpecialType.FireBomb), Is.True);
+      Assert.That(engine.MovesRemaining, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void ActivateFireBombClampsAtBoardEdges()
     {
       var board = new BoardState(new BoardSize(5, 5));
       for (var x = 0; x < 5; x++)

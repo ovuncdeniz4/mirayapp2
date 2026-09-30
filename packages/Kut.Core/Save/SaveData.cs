@@ -4,7 +4,7 @@ namespace Kut.Core.Save
 {
   public sealed class SaveData
   {
-    public int SchemaVersion { get; set; } = 2;
+    public int SchemaVersion { get; set; } = 3;
     public bool OnboardingComplete { get; set; }
     public string AnimalId { get; set; } = "";
     public int AnimalAssignmentVersion { get; set; } = 1;
@@ -15,6 +15,11 @@ namespace Kut.Core.Save
     public int TotemTier { get; set; }
     public bool Chapter2Complete { get; set; }
     public List<string> UnlockedCollectionIds { get; set; } = new List<string>();
+    public float MusicVolume { get; set; } = 1f;
+    public float SfxVolume { get; set; } = 1f;
+    public bool HapticsEnabled { get; set; } = true;
+    public bool ReducedMotion { get; set; }
+    public List<string> CompletedTutorialIds { get; set; } = new List<string>();
   }
 
   public sealed class LevelSaveEntry

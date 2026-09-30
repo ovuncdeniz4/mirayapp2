@@ -9,6 +9,7 @@
 | [`game-design-ch1.md`](game-design-ch1.md) | Levels 1–10 mechanics |
 | [`game-design-ch2.md`](game-design-ch2.md) | Levels 11–20, Fire Bomb |
 | [`unity-setup.md`](unity-setup.md) | Open project, Play bootstrap |
+| [`unity-revision-plan-tr.md`](unity-revision-plan-tr.md) | Unity UX/art tamamlama planı (TR) |
 | [`roadmap-remaining.md`](roadmap-remaining.md) | Art polish, stores, Ch3+ |
 
 **Implementation traceability:** UX ids map to `KutAppBootstrap` panels and CLI `--slice` menus.

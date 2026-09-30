@@ -1,24 +1,39 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Kut.Core.Board;
 using Kut.Core.Obstacles;
 using Kut.Core.Tiles;
 using Kut.Unity.Design;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Kut.Unity.Presentation
 {
-  /// <summary>
-  /// Canvas-based 8×8 board per visual-design-system (touch select + swap / activate).
-  /// </summary>
+  /// <summary>Canvas 8×8 board — tap, drag swap, animations (read-only state).</summary>
   public sealed class BoardGridUi : MonoBehaviour
   {
-    private readonly List<Button> _cells = new List<Button>();
+    private sealed class CellSlot
+    {
+      public GridPos Pos;
+      public Button Button = null!;
+      public Image Image = null!;
+      public RectTransform Rect = null!;
+      public Outline Outline = null!;
+    }
+
+    private readonly List<CellSlot> _cells = new List<CellSlot>();
     private GridPos? _selected;
     private BoardState? _state;
     private int _width;
     private int _height;
+    private GridPos? _lastSwapFrom;
+    private GridPos? _lastSwapTo;
+    private GridPos? _pointerDown;
+    private Transform? _gridRoot;
+
+    public bool InputLocked { get; set; }
 
     public event Action<GridPos, GridPos>? SwapRequested;
     public event Action<GridPos>? ActivateRequested;
@@ -55,6 +70,7 @@ namespace Kut.Unity.Presentation
 
       var gridGo = new GameObject("Grid", typeof(RectTransform), typeof(GridLayoutGroup));
       gridGo.transform.SetParent(transform, false);
+      _gridRoot = gridGo.transform;
       var rt = gridGo.GetComponent<RectTransform>();
       rt.anchorMin = new Vector2(0.06f, 0.12f);
       rt.anchorMax = new Vector2(0.94f, 0.88f);
@@ -80,8 +96,7 @@ namespace Kut.Unity.Presentation
         for (var x = 0; x < _width; x++)
         {
           var pos = new GridPos(x, y);
-          var cell = CreateCell(gridGo.transform, pos);
-          _cells.Add(cell);
+          _cells.Add(CreateCell(gridGo.transform, pos));
         }
       }
 
@@ -91,22 +106,119 @@ namespace Kut.Unity.Presentation
     public void Refresh(BoardState state)
     {
       _state = state;
-      var idx = 0;
-      for (var y = 0; y < _height; y++)
+      for (var i = 0; i < _cells.Count; i++)
       {
-        for (var x = 0; x < _width; x++)
-        {
-          var pos = new GridPos(x, y);
-          var cell = state.GetCell(pos);
-          ApplyCellVisual(_cells[idx].GetComponent<Image>(), cell);
-          var highlight = _selected.HasValue && _selected.Value.Equals(pos);
-          _cells[idx].GetComponent<Outline>().enabled = highlight;
-          idx++;
-        }
+        var slot = _cells[i];
+        var cell = state.GetCell(slot.Pos);
+        ApplyCellVisual(slot.Image, cell);
+        slot.Outline.enabled = _selected.HasValue && _selected.Value.Equals(slot.Pos);
       }
     }
 
-    private Button CreateCell(Transform parent, GridPos pos)
+    public IEnumerator AnimateSwap(GridPos from, GridPos to, float duration)
+    {
+      _lastSwapFrom = from;
+      _lastSwapTo = to;
+      var a = GetSlot(from);
+      var b = GetSlot(to);
+      if (a == null || b == null || duration <= 0f)
+      {
+        yield break;
+      }
+
+      var posA = a.Rect.anchoredPosition;
+      var posB = b.Rect.anchoredPosition;
+      var t = 0f;
+      while (t < duration)
+      {
+        t += Time.deltaTime;
+        var k = Mathf.Clamp01(t / duration);
+        a.Rect.anchoredPosition = Vector2.Lerp(posA, posB, k);
+        b.Rect.anchoredPosition = Vector2.Lerp(posB, posA, k);
+        yield return null;
+      }
+
+      a.Rect.anchoredPosition = posA;
+      b.Rect.anchoredPosition = posB;
+    }
+
+    public IEnumerator AnimateSwapRevert(float duration)
+    {
+      if (!_lastSwapFrom.HasValue || !_lastSwapTo.HasValue)
+      {
+        yield break;
+      }
+
+      yield return AnimateSwap(_lastSwapTo.Value, _lastSwapFrom.Value, duration);
+      yield return ShakeCells(_lastSwapFrom.Value, _lastSwapTo.Value, duration * 0.5f);
+    }
+
+    public IEnumerator FlashClear(IReadOnlyList<GridPos> cells, float duration, float stagger)
+    {
+      for (var i = 0; i < cells.Count; i++)
+      {
+        var slot = GetSlot(cells[i]);
+        if (slot != null)
+        {
+          StartCoroutine(FlashCell(slot.Image, duration));
+        }
+
+        if (stagger > 0f)
+        {
+          yield return new WaitForSeconds(stagger);
+        }
+      }
+
+      if (duration > 0f)
+      {
+        yield return new WaitForSeconds(duration);
+      }
+    }
+
+    public void PlayInvalidSwapFeedback(GridPos a, GridPos b)
+    {
+      StartCoroutine(ShakeCells(a, b, 0.16f));
+    }
+
+    private IEnumerator FlashCell(Image img, float duration)
+    {
+      if (duration <= 0f)
+      {
+        yield break;
+      }
+
+      var orig = img.color;
+      img.color = Color.white;
+      yield return new WaitForSeconds(duration);
+      img.color = orig;
+    }
+
+    private IEnumerator ShakeCells(GridPos a, GridPos b, float duration)
+    {
+      var sa = GetSlot(a);
+      var sb = GetSlot(b);
+      if (sa == null || sb == null)
+      {
+        yield break;
+      }
+
+      var ta = sa.Rect.anchoredPosition;
+      var tb = sb.Rect.anchoredPosition;
+      var t = 0f;
+      while (t < duration)
+      {
+        t += Time.deltaTime;
+        var n = Mathf.Sin(t * 40f) * 4f;
+        sa.Rect.anchoredPosition = ta + new Vector2(n, 0);
+        sb.Rect.anchoredPosition = tb + new Vector2(-n, 0);
+        yield return null;
+      }
+
+      sa.Rect.anchoredPosition = ta;
+      sb.Rect.anchoredPosition = tb;
+    }
+
+    private CellSlot CreateCell(Transform parent, GridPos pos)
     {
       var go = new GameObject($"Cell_{pos.X}_{pos.Y}", typeof(RectTransform), typeof(Image), typeof(Button), typeof(Outline));
       go.transform.SetParent(parent, false);
@@ -117,14 +229,80 @@ namespace Kut.Unity.Presentation
       outline.effectDistance = new Vector2(3, 3);
       outline.enabled = false;
 
+      var trigger = go.AddComponent<EventTrigger>();
+      AddPointer(trigger, EventTriggerType.PointerDown, _ => OnPointerDown(pos));
+      AddPointer(trigger, EventTriggerType.PointerUp, _ => OnPointerUp(pos));
+      AddPointer(trigger, EventTriggerType.BeginDrag, _ => { });
+      AddPointer(trigger, EventTriggerType.Drag, data => OnDrag(pos, data));
+
       var btn = go.GetComponent<Button>();
       btn.onClick.AddListener(() => OnCellClicked(pos));
-      return btn;
+
+      return new CellSlot
+      {
+        Pos = pos,
+        Button = btn,
+        Image = img,
+        Rect = go.GetComponent<RectTransform>(),
+        Outline = outline
+      };
+    }
+
+    private static void AddPointer(EventTrigger trigger, EventTriggerType type, Action<BaseEventData> handler)
+    {
+      var entry = new EventTrigger.Entry { eventID = type };
+      entry.callback.AddListener(handler.Invoke);
+      trigger.triggers.Add(entry);
+    }
+
+    private void OnPointerDown(GridPos pos)
+    {
+      if (InputLocked)
+      {
+        return;
+      }
+
+      _pointerDown = pos;
+    }
+
+    private void OnPointerUp(GridPos pos)
+    {
+      _pointerDown = null;
+    }
+
+    private void OnDrag(GridPos origin, BaseEventData data)
+    {
+      if (InputLocked || !_pointerDown.HasValue || data is not PointerEventData ped)
+      {
+        return;
+      }
+
+      var delta = ped.position - ped.pressPosition;
+      if (delta.magnitude < 32f)
+      {
+        return;
+      }
+
+      GridPos? target = null;
+      if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+      {
+        target = origin.Offset(delta.x > 0 ? 1 : -1, 0);
+      }
+      else
+      {
+        target = origin.Offset(0, delta.y > 0 ? -1 : 1);
+      }
+
+      if (target.HasValue && IsAdjacent(origin, target.Value))
+      {
+        _pointerDown = null;
+        SwapRequested?.Invoke(origin, target.Value);
+      }
     }
 
     private void OnCellClicked(GridPos pos)
     {
-      if (_state == null)
+      if (InputLocked || _state == null)
       {
         return;
       }
@@ -156,6 +334,19 @@ namespace Kut.Unity.Presentation
 
       _selected = null;
       Refresh(_state);
+    }
+
+    private CellSlot? GetSlot(GridPos pos)
+    {
+      for (var i = 0; i < _cells.Count; i++)
+      {
+        if (_cells[i].Pos.Equals(pos))
+        {
+          return _cells[i];
+        }
+      }
+
+      return null;
     }
 
     private static bool IsAdjacent(GridPos a, GridPos b) =>

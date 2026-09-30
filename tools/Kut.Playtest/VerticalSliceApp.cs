@@ -267,7 +267,7 @@ namespace Kut.Playtest
       {
         var def = session.Objectives.Definitions[i];
         var done = session.Objectives.IsObjectiveComplete(i) ? "✓" : " ";
-        Console.WriteLine($"  [{done}] {def.Type}: {session.Objectives.GetProgress(i)}/{def.Target}");
+        Console.WriteLine($"  [{done}] {ObjectiveCopyTr.Label(def)}: {session.Objectives.GetProgress(i)}/{def.Target}");
       }
     }
 

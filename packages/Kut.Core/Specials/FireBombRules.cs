@@ -21,12 +21,17 @@ namespace Kut.Core.Specials
       }
 
       events.Add(new SpecialActivatedEvent(at, SpecialType.FireBomb));
-      events.Add(new AreaClearEvent(at, 1));
+      events.Add(new AreaClearEvent(at, 2));
 
-      for (var dx = -1; dx <= 1; dx++)
+      for (var dx = -2; dx <= 2; dx++)
       {
-        for (var dy = -1; dy <= 1; dy++)
+        for (var dy = -2; dy <= 2; dy++)
         {
+          if (System.Math.Abs(dx) + System.Math.Abs(dy) > 2)
+          {
+            continue;
+          }
+
           var pos = at.Offset(dx, dy);
           if (!board.Size.Contains(pos))
           {

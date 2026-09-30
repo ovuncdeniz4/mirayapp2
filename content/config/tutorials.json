@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "tutorials": [
+    { "id": "tut_basic_swap", "levelGate": "level_001", "trTitle": "İlk hamle", "trBody": "Komşu iki hücreye dokun veya sürükleyerek eşleştir." },
+    { "id": "tut_mud", "levelGate": "level_005", "trTitle": "Çamur", "trBody": "Su eşleşmesi çamuru temizler." },
+    { "id": "tut_drum", "levelGate": "level_008", "trTitle": "Şaman davulu", "trBody": "5'li düz eşleşme davul oluşturur." },
+    { "id": "tut_fire_bomb", "levelGate": "level_012", "trTitle": "Ateş bombası", "trBody": "L/T 5 eşleşme bomba oluşturur — dokunarak patlat." }
+  ]
+}

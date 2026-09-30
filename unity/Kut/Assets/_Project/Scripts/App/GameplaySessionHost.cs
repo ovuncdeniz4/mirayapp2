@@ -4,8 +4,7 @@ using UnityEngine;
 namespace Kut.Unity.App
 {
   /// <summary>
-  /// Scene host: loads level JSON and binds BoardView to LevelSession state.
-  /// Assign levelJson TextAsset to level_001 … level_010 from Content/Levels.
+  /// Legacy Stage-A world-space board host. Canonical UX uses KutAppBootstrap + BoardGridUi (uGUI).
   /// </summary>
   public sealed class GameplaySessionHost : MonoBehaviour
   {
