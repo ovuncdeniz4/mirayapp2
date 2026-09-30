@@ -36,7 +36,7 @@ When a tile is cleared, its **former cell** is the reaction source:
 
 - **Wind Chime:** L/T match creation (when enabled); tap/`activate` clears row+column cross.
 - **Shaman Drum:** straight line of 5 (when enabled); `activate` clears tiles matching its resonance group.
-- **Fire Bomb:** Chapter 2+ (`enableFireBomb`); 2×2 match spawns bomb; activate clears 3×3 (costs a move).
+- **Fire Bomb:** Chapter 2+ (`enableFireBomb`); L/T 5-match spawns bomb; activate clears all tiles in **Manhattan distance ≤ 2** (13 cells on open board; clamped at edges).
 
 ## Element reactions (Chapter 2)
 

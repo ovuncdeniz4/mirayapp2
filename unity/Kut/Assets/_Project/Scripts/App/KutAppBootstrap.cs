@@ -10,9 +10,11 @@ using Kut.Core.Objectives;
 using Kut.Core.Save;
 using Kut.Unity.Design;
 using Kut.Unity.Presentation;
+using Kut.Unity.Services;
 using Kut.Unity.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Kut.Unity.App
 {
@@ -54,6 +56,17 @@ namespace Kut.Unity.App
     private Button? _collectionBtn;
     private LevelSession? _levelSession;
     private string? _activeLevelId;
+    private LevelPresentationController? _presentation;
+    private PresentationAnimationQueue? _animQueue;
+    private UnityAudioService? _audio;
+    private IHapticsService _haptics = new NoOpHapticsService();
+    private SplashOverlayUi? _splash;
+    private PauseOverlayUi? _pause;
+    private ConfirmDialogUi? _confirm;
+    private SettingsPanelUi? _settings;
+    private TutorialOverlayUi? _tutorial;
+    private CeremonyOverlayUi? _ceremony;
+    private bool _paused;
 
     private void Awake()
     {
@@ -74,7 +87,59 @@ namespace Kut.Unity.App
       _resultOverlay.Build(canvas.transform);
       _toast = KutToastUi.Create(canvas.transform);
 
+      _splash = canvas.gameObject.AddComponent<SplashOverlayUi>();
+      _splash.Build(canvas.transform);
+      _pause = canvas.gameObject.AddComponent<PauseOverlayUi>();
+      _pause.Build(canvas.transform, OnPauseResume, OnPauseMap, OnPauseRetry);
+      _confirm = canvas.gameObject.AddComponent<ConfirmDialogUi>();
+      _confirm.Build(canvas.transform);
+      _settings = canvas.gameObject.AddComponent<SettingsPanelUi>();
+      _settings.Build(canvas.transform, _save, ApplySettings, BackHome, ResetSave);
+      _tutorial = canvas.gameObject.AddComponent<TutorialOverlayUi>();
+      _tutorial.Build(canvas.transform);
+      _ceremony = canvas.gameObject.AddComponent<CeremonyOverlayUi>();
+      _ceremony.Build(canvas.transform);
+
+      var audioGo = new GameObject("AudioService");
+      DontDestroyOnLoad(audioGo);
+      _audio = audioGo.AddComponent<UnityAudioService>();
+      ApplySettings();
+
+      HideAll();
+      StartCoroutine(SplashThenStart());
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+      var dev = canvas.gameObject.AddComponent<DevDebugOverlay>();
+      dev.Bind(this);
+#endif
+    }
+
+    private IEnumerator SplashThenStart()
+    {
+      while (!_splash!.Tick(Time.deltaTime))
+      {
+        yield return null;
+      }
+
+      _splash.Hide();
       ShowInitial();
+    }
+
+    private void ApplySettings()
+    {
+      _audio?.SetVolumes(_save.MusicVolume, _save.SfxVolume);
+      _haptics.Enabled = _save.HapticsEnabled;
+    }
+
+    private void ResetSave()
+    {
+      _confirm?.Show("Tüm ilerleme silinecek. Emin misin?", () =>
+      {
+        _save = new SaveData();
+        SaveStore.Save(_savePath, _save);
+        ApplySettings();
+        HideAll();
+        _onboardingPanel.SetActive(true);
+      }, () => { });
     }
 
     private void ShowInitial()
@@ -154,10 +219,12 @@ namespace Kut.Unity.App
       KutUiFactory.PrimaryButton(_homePanel.transform, "Hayvan",
         new Vector2(0.55f, 0.18f), new Vector2(0.88f, 0.26f)).onClick.AddListener(ShowAnimal);
       _totemBtn = KutUiFactory.PrimaryButton(_homePanel.transform, "Totem 🔒",
-        new Vector2(0.12f, 0.08f), new Vector2(0.45f, 0.16f));
+        new Vector2(0.12f, 0.1f), new Vector2(0.45f, 0.16f));
       _totemBtn.onClick.AddListener(ShowTotem);
       _collectionBtn = KutUiFactory.PrimaryButton(_homePanel.transform, "Koleksiyon 🔒",
-        new Vector2(0.55f, 0.08f), new Vector2(0.88f, 0.16f));
+        new Vector2(0.55f, 0.1f), new Vector2(0.88f, 0.16f));
+      KutUiFactory.PrimaryButton(_homePanel.transform, "Ayarlar",
+        new Vector2(0.25f, 0.02f), new Vector2(0.75f, 0.08f)).onClick.AddListener(() => _settings?.Show());
       _collectionBtn.onClick.AddListener(ShowCollection);
     }
 
@@ -230,9 +297,13 @@ namespace Kut.Unity.App
       bhRt.offsetMin = Vector2.zero;
       bhRt.offsetMax = Vector2.zero;
       _boardGrid = boardHost.AddComponent<BoardGridUi>();
+      _animQueue = boardHost.AddComponent<PresentationAnimationQueue>();
+      _presentation = boardHost.AddComponent<LevelPresentationController>();
 
-      KutUiFactory.PrimaryButton(_levelPanel.transform, "Geri",
-        new Vector2(0.15f, 0.04f), new Vector2(0.85f, 0.1f)).onClick.AddListener(ConfirmQuitLevel);
+      KutUiFactory.PrimaryButton(_levelPanel.transform, "Duraklat",
+        new Vector2(0.08f, 0.04f), new Vector2(0.45f, 0.1f)).onClick.AddListener(() => _pause?.Show());
+      KutUiFactory.PrimaryButton(_levelPanel.transform, "Çık",
+        new Vector2(0.55f, 0.04f), new Vector2(0.92f, 0.1f)).onClick.AddListener(ConfirmQuitLevel);
     }
 
     private void BuildAnimal(Transform root)
@@ -304,12 +375,17 @@ namespace Kut.Unity.App
         day = 1;
       }
 
-      GameShell.CompleteOnboarding(_save, month, day);
-      SaveStore.Save(_savePath, _save);
-      _revealText!.text = AnimalAssignment.DisplayNameTr(_save.AnimalId);
-      ApplyAnimalPortrait(_revealPortrait, _save.AnimalId);
       HideAll();
-      _onboardingRevealPanel.SetActive(true);
+      _ceremony!.Play(() =>
+      {
+        GameShell.CompleteOnboarding(_save, month, day);
+        SaveStore.Save(_savePath, _save);
+        DebugAnalytics.LogEvent("onboarding_completed");
+        DebugAnalytics.LogEvent("animal_assigned", _save.AnimalId);
+        _revealText!.text = AnimalAssignment.DisplayNameTr(_save.AnimalId);
+        ApplyAnimalPortrait(_revealPortrait, _save.AnimalId);
+        _onboardingRevealPanel.SetActive(true);
+      });
     }
 
     private void RefreshHome()
@@ -454,42 +530,44 @@ namespace Kut.Unity.App
       _boardGrid.SwapRequested += OnSwapRequested;
       _boardGrid.ActivateRequested += OnActivateRequested;
       _boardGrid.Build(_levelSession.Engine.State);
+      _presentation!.Init(_boardGrid, _animQueue!, _save, _audio!, _haptics);
+      _presentation.InvalidSwap -= OnInvalidSwap;
+      _presentation.InvalidSwap += OnInvalidSwap;
 
       RefreshLevelHud();
       HideAll();
       _levelPanel.SetActive(true);
+      DebugAnalytics.LogEvent("level_started", levelId);
+      MaybeShowTutorial(levelId);
     }
 
     private void OnSwapRequested(Kut.Core.Board.GridPos a, Kut.Core.Board.GridPos b)
     {
-      if (_levelSession == null || _boardGrid == null)
+      if (_levelSession == null || _presentation == null || _presentation.IsPlaying || _paused)
       {
         return;
       }
 
-      var result = _levelSession.Submit(new SwapCommand(a, b));
-      if (result.Events.Any(e => e.EventType == "swap_reverted"))
-      {
-        ShowToast("Geçersiz hamle — eşleşme yok");
-      }
-
-      _boardGrid.Refresh(_levelSession.Engine.State);
-      RefreshLevelHud();
-      CheckLevelEnd();
+      _presentation.Submit(_levelSession, new SwapCommand(a, b), AfterLevelCommand);
     }
 
     private void OnActivateRequested(Kut.Core.Board.GridPos at)
     {
-      if (_levelSession == null || _boardGrid == null)
+      if (_levelSession == null || _presentation == null || _presentation.IsPlaying || _paused)
       {
         return;
       }
 
-      _levelSession.Submit(new ActivateSpecialCommand(at));
-      _boardGrid.Refresh(_levelSession.Engine.State);
+      _presentation.Submit(_levelSession, new ActivateSpecialCommand(at), AfterLevelCommand);
+    }
+
+    private void AfterLevelCommand()
+    {
       RefreshLevelHud();
       CheckLevelEnd();
     }
+
+    private void OnInvalidSwap() => ShowToast("Geçersiz hamle — eşleşme yok");
 
     private void RefreshLevelHud()
     {
@@ -508,7 +586,7 @@ namespace Kut.Unity.App
       {
         var d = _levelSession.Objectives.Definitions[i];
         var mark = _levelSession.Objectives.IsObjectiveComplete(i) ? "✓" : " ";
-        sb.AppendLine($"[{mark}] {ObjectiveLabelTr(d)}: {_levelSession.Objectives.GetProgress(i)}/{d.Target}");
+        sb.AppendLine($"[{mark}] {KutCopyTr.ObjectiveLabel(d)}: {_levelSession.Objectives.GetProgress(i)}/{d.Target}");
       }
 
       _objectivesText!.text = sb.ToString();
@@ -525,13 +603,16 @@ namespace Kut.Unity.App
       {
         GameShell.ApplyVictory(_save, _content, _activeLevelId);
         SaveStore.Save(_savePath, _save);
-        _resultOverlay.ShowVictory(() =>
-        {
-          ExitLevel();
-        });
+        DebugAnalytics.LogEvent("level_completed", _activeLevelId);
+        _audio?.PlayVictory();
+        var showTotemTeaser = _activeLevelId == "level_010" && _save.TotemTabUnlocked;
+        _resultOverlay.ShowVictory(() => ExitLevel(), showTotemTeaser
+          ? "Totem yolu açıldı — ruh yolculuğun derinleşiyor."
+          : null);
       }
       else if (_levelSession.Outcome == LevelOutcome.Defeat)
       {
+        DebugAnalytics.LogEvent("level_failed", _activeLevelId!);
         _resultOverlay.ShowDefeat(
           () => StartLevel(_activeLevelId),
           () =>
@@ -544,7 +625,61 @@ namespace Kut.Unity.App
 
     private void ConfirmQuitLevel()
     {
+      _confirm?.Show("Seviyeden çıkılsın mı?", () => ExitLevel(), () => { });
+    }
+
+    private void OnPauseResume()
+    {
+      _paused = false;
+    }
+
+    private void OnPauseMap()
+    {
+      _paused = false;
       ExitLevel();
+      ShowMap();
+    }
+
+    private void OnPauseRetry()
+    {
+      _paused = false;
+      if (_activeLevelId != null)
+      {
+        StartLevel(_activeLevelId);
+      }
+    }
+
+    private void MaybeShowTutorial(string levelId)
+    {
+      var tutId = levelId switch
+      {
+        "level_001" => "tut_basic_swap",
+        "level_005" => "tut_mud",
+        "level_008" => "tut_drum",
+        "level_012" => "tut_fire_bomb",
+        _ => null
+      };
+      if (tutId == null || _save.CompletedTutorialIds.Contains(tutId))
+      {
+        return;
+      }
+
+      var (title, body) = tutId switch
+      {
+        "tut_basic_swap" => ("İlk hamle", "Komşu iki hücreye dokun veya sürükleyerek eşleştir."),
+        "tut_mud" => ("Çamur", "Su eşleşmesi çamuru temizler."),
+        "tut_drum" => ("Şaman davulu", "5'li düz eşleşme davul oluşturur — iki kez dokunarak kullan."),
+        _ => ("Ateş bombası", "L/T 5 eşleşme bomba oluşturur — dokunarak patlat.")
+      };
+      var canSkip = _save.CompletedTutorialIds.Count > 0;
+      _tutorial?.Show(title, body, canSkip, () =>
+      {
+        if (!_save.CompletedTutorialIds.Contains(tutId))
+        {
+          _save.CompletedTutorialIds.Add(tutId);
+          SaveStore.Save(_savePath, _save);
+        }
+      });
     }
 
     private void ExitLevel()
@@ -670,20 +805,6 @@ namespace Kut.Unity.App
       }
     }
 
-    private static string ObjectiveLabelTr(ObjectiveDefinition d)
-    {
-      return d.Type switch
-      {
-        ObjectiveType.MakeMatches => "Eşleşme",
-        ObjectiveType.CollectElement => d.Element == "water" ? "Su topla" : d.Element == "fire" ? "Ateş topla" : "Toprak topla",
-        ObjectiveType.CascadeDepthInTurn => "Zincir",
-        ObjectiveType.CreateSpecial => "Özel oluştur",
-        ObjectiveType.ActivateSpecial => "Özel kullan",
-        ObjectiveType.ClearObstacle => d.Obstacle == "mud" ? "Çamur temizle" : "Sarmaşık kır",
-        _ => d.Type.ToString()
-      };
-    }
-
     private void ShowToast(string msg)
     {
       Debug.Log($"[Toast] {msg}");
@@ -713,6 +834,47 @@ namespace Kut.Unity.App
       target.sprite = sprite;
       target.enabled = sprite != null;
     }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    public void DevAddMoves(int n)
+    {
+      _levelSession?.Engine.AddBonusMoves(n);
+      RefreshLevelHud();
+    }
+
+    public void DevForceWin()
+    {
+      if (_levelSession == null)
+      {
+        return;
+      }
+
+      while (_levelSession.Outcome == LevelOutcome.InProgress)
+      {
+        _levelSession.Engine.AddBonusMoves(1);
+        _levelSession.Objectives.BeginTurn();
+        var state = _levelSession.Engine.State;
+        for (var x = 0; x < state.Size.Width; x++)
+        {
+          for (var y = 0; y < state.Size.Height - 1; y++)
+          {
+            var a = new Kut.Core.Board.GridPos(x, y);
+            var b = new Kut.Core.Board.GridPos(x, y + 1);
+            var r = _levelSession.Submit(new SwapCommand(a, b));
+            if (!r.Events.Any(e => e.EventType == "swap_reverted"))
+            {
+              RefreshLevelHud();
+              CheckLevelEnd();
+              if (_levelSession.Outcome != LevelOutcome.InProgress)
+              {
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+#endif
 
     private static InputField CreateInput(Transform parent, Vector2 min, Vector2 max)
     {

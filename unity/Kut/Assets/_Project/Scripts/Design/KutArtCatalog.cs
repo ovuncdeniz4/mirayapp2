@@ -70,6 +70,8 @@ namespace Kut.Unity.Design
 
     public static Sprite? TryBoardTray() => Load("UI", "ui_board_tray");
 
+    public static Sprite? TryPanelFrame() => Load("UI", "ui_panel_frame");
+
     private static Sprite? Load(string category, string spriteId)
     {
       var path = $"{Root}/{category}/{spriteId}";

@@ -1,15 +1,26 @@
-# KUT — Remaining work (post CLI Ch1–Ch2)
+# KUT — Remaining work
 
-Implemented without Unity through **Chapter 2 (levels 1–20)**, meta collection/totem tiers, and animal bonuses.
+## Tamamlandı (AAA plan — App Store hariç)
 
-**In repo now:** [`visual-design-system.md`](visual-design-system.md), [`ART_DIRECTION.md`](ART_DIRECTION.md), [`ux-ui-spec.md`](ux-ui-spec.md), Unity runtime UI via `KutAppBootstrap`, **34 plan-keyed sprites** under `Resources/Art/`.
+- Kut.Core L1–20 + Fire Bomb 13 hücre
+- Unity uGUI: animasyon kuyruğu, swipe, pause/settings/splash/tutorial
+- Ses (procedural placeholder), haptics stub, save v3 + backup
+- CI: test + validator + art manifest
+- Docs: completion checklist, mobile dev build
 
-Still out of scope until Editor iteration:
+## Bilinçli dışarıda
 
-- **Art polish** — iterate sprites in Unity (nine-slice UI frame, board tray behind grid, collection grid thumbnails).
-- **Touch polish** — full swipe on board; audio, haptics, store builds.
-- **Spirit & Metal** on board — enum placeholders; Spirit stays meta until a later chapter plan.
-- **Chapters 3+** — content, bosses, live ops, localization pipeline.
-- **Online services** — cloud save, analytics, anti-cheat (enterprise).
+- App Store / TestFlight / store metadata
+- Bölüm 3+ (L21+, Metal, Spirit meter, boss)
+- UI Toolkit migrasyonu
+- F2P, cloud save, production analytics SDK
+- Unity 6.3 hattı (Ventura+ makineler — opsiyonel)
 
-Extend Core the same way as Ch2: JSON levels + objectives + rules flags + tests + CLI map entries.
+## Sonraki üretim
+
+- Final audio clip set + AudioMixer assets
+- Harita parallax PNG (`map_bg_ch1`, `map_bg_ch2`)
+- Tile/special art iteration (generator veya manual)
+- Addressables (opsiyonel)
+
+Extend Core: JSON levels + tests + `./tools/sync-core-to-unity.sh`.

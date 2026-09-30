@@ -22,6 +22,29 @@ namespace Kut.Unity.UI
       return canvas;
     }
 
+    public static GameObject BorderedPanel(Transform parent, string name, float heightFraction = 1f)
+    {
+      var panel = Panel(parent, name, heightFraction);
+      var frame = KutArtCatalog.TryPanelFrame();
+      if (frame != null)
+      {
+        var frameGo = new GameObject("Frame", typeof(RectTransform), typeof(Image));
+        frameGo.transform.SetParent(panel.transform, false);
+        var rt = frameGo.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = new Vector2(8, 8);
+        rt.offsetMax = new Vector2(-8, -8);
+        var img = frameGo.GetComponent<Image>();
+        img.sprite = frame;
+        img.type = Image.Type.Sliced;
+        img.color = Color.white;
+        img.raycastTarget = false;
+      }
+
+      return panel;
+    }
+
     public static GameObject Panel(Transform parent, string name, float heightFraction = 1f)
     {
       var go = new GameObject(name, typeof(RectTransform), typeof(Image));

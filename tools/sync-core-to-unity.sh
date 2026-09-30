@@ -26,6 +26,7 @@ cp "$ROOT/content/levels/"*.json "$RES_DEST/levels/"
 cp "$ROOT/content/chapters.json" "$RES_DEST/chapters.json"
 cp "$ROOT/content/collection/catalog.json" "$RES_DEST/collection/catalog.json"
 cp "$ROOT/content/config/"*.json "$RES_DEST/Config/"
+cp "$ROOT/content/config/tutorials.json" "$RES_DEST/Config/tutorials.json" 2>/dev/null || true
 echo "Synced Kut.Core.dll + System.Text.Json deps to $ASM_DEST"
 echo "Synced level JSON to $LEVEL_DEST and $RES_DEST/levels"
 echo "Synced chapters + collection + config to $RES_DEST"

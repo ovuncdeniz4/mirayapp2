@@ -1,0 +1,19 @@
+name: KUT CI
+
+on:
+  push:
+    branches: [main, 'cursor/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet test tests/Kut.Core.Tests/Kut.Core.Tests.csproj -c Release
+      - run: dotnet run --project tools/Kut.LevelValidator/Kut.LevelValidator.csproj -c Release
+      - run: chmod +x tools/validate-art-manifest.sh && ./tools/validate-art-manifest.sh

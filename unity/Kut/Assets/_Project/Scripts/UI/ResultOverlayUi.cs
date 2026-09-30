@@ -26,12 +26,14 @@ namespace Kut.Unity.UI
       _secondary.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
     }
 
-    public void ShowVictory(System.Action onContinue)
+    public void ShowVictory(System.Action onContinue, string? subtitle = null)
     {
-      _title.text = "ZAFER";
+      _title.text = string.IsNullOrEmpty(subtitle) ? "ZAFER" : "ZAFER\n" + subtitle;
+      _title.fontSize = string.IsNullOrEmpty(subtitle) ? 56 : 40;
       _title.color = KutDesignTokens.AccentGold;
       _primary.onClick.RemoveAllListeners();
       _secondary.onClick.RemoveAllListeners();
+      _primary.GetComponentInChildren<Text>().text = "Devam";
       _primary.onClick.AddListener(() =>
       {
         Hide();

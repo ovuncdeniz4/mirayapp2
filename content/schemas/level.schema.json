@@ -37,6 +37,10 @@
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/$defs/objective" }
+    },
+    "tutorials": {
+      "type": "array",
+      "items": { "type": "string" }
     }
   },
   "$defs": {
