@@ -96,7 +96,7 @@ namespace Kut.Unity.UI
       AddToggle("Titreşim", 0.46f, _save.HapticsEnabled, v => { _save.HapticsEnabled = v; _onChanged(); });
       AddToggle("Azaltılmış hareket", 0.36f, _save.ReducedMotion, v => { _save.ReducedMotion = v; _onChanged(); });
       KutUiFactory.PrimaryButton(_root.transform, "Kaydı sıfırla", new Vector2(0.12f, 0.14f), new Vector2(0.88f, 0.22f))
-        .onClick.AddListener(onReset);
+        .onClick.AddListener(() => onReset());
       KutUiFactory.PrimaryButton(_root.transform, "Geri", new Vector2(0.2f, 0.04f), new Vector2(0.8f, 0.12f))
         .onClick.AddListener(() => { _root.SetActive(false); onClose(); });
       _root.SetActive(false);
@@ -132,7 +132,7 @@ namespace Kut.Unity.UI
       rt.offsetMax = Vector2.zero;
       var t = go.GetComponent<Toggle>();
       t.isOn = value;
-      t.onValueChanged.AddListener(set);
+      t.onValueChanged.AddListener(v => set(v));
       var txt = go.GetComponent<Text>();
       txt.text = "  " + label;
       txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

@@ -19,12 +19,12 @@ namespace Kut.Unity.App
         return;
       }
 
-      if (Input.GetKeyDown(KeyCode.M))
+      if (UnityEngine.Input.GetKeyDown(KeyCode.M))
       {
         _bootstrap.DevAddMoves(5);
       }
 
-      if (Input.GetKeyDown(KeyCode.W))
+      if (UnityEngine.Input.GetKeyDown(KeyCode.W))
       {
         _bootstrap.DevForceWin();
       }

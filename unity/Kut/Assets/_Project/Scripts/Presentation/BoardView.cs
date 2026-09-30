@@ -33,7 +33,7 @@ namespace Kut.Unity.Presentation
       _lastState = stateAfter;
       if (animationQueue != null)
       {
-        animationQueue.Play(events, () => RefreshFromState(stateAfter));
+        animationQueue.Play(events, stateAfter, () => RefreshFromState(stateAfter));
         return;
       }
 
