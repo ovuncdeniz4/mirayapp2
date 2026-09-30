@@ -71,9 +71,9 @@ namespace Kut.Unity.Presentation
         hostWidth = 900f;
       }
 
-      var cell = Mathf.Floor((hostWidth * 0.88f - layout.spacing.x * (_width - 1)) / _width);
-      cell = Mathf.Clamp(cell, 48f, 120f);
-      layout.cellSize = new Vector2(cell, cell);
+      var cellSize = Mathf.Floor((hostWidth * 0.88f - layout.spacing.x * (_width - 1)) / _width);
+      cellSize = Mathf.Clamp(cellSize, 48f, 120f);
+      layout.cellSize = new Vector2(cellSize, cellSize);
 
       for (var y = 0; y < _height; y++)
       {
