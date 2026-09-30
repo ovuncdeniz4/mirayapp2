@@ -8,11 +8,17 @@ GitHub → **Code** → **Download ZIP** on branch **`main`** (latest).
 
 This file **must** exist:
 
-```text
-unity/Kut/Assets/_Project/Scripts/Kut.Core.dll
-```
+In **`unity/Kut/Assets/_Project/Scripts/`** (same folder as `Kut.Unity.asmdef`):
 
-Same folder as `Kut.Unity.asmdef`. Size about **56 KB**.
+| File | ~size |
+|------|--------|
+| `Kut.Core.dll` | 56 KB |
+| `System.Text.Json.dll` | 595 KB |
+| `System.Text.Encodings.Web.dll` | 79 KB |
+| `Microsoft.Bcl.AsyncInterfaces.dll` | 27 KB |
+| `System.Runtime.CompilerServices.Unsafe.dll` | 18 KB |
+
+Also remove **`Assets/Plugins/Kut.Core.dll`** if present (duplicate causes extra errors).
 
 If it is missing, your ZIP is old — download **`main`** again.
 
@@ -34,4 +40,4 @@ Editor: **2022.3.62f1**
 
 Manual fix (if DLL only exists under `Assets/Plugins`):
 
-Copy **`Kut.Core.dll`** and **`Kut.Core.dll.meta`** into **`Assets/_Project/Scripts/`**, then restart Unity.
+Copy all **`*.dll`** and **`*.dll.meta`** from a fresh ZIP’s **`Assets/_Project/Scripts/`** into yours. Delete **`Assets/Plugins/Kut.Core.dll`** if it exists.
