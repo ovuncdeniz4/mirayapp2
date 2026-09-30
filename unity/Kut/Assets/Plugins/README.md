@@ -1,11 +1,7 @@
-# Kut.Core plugin
+# Moved
 
-`Kut.Core.dll` is **committed** so Unity opens without .NET on your Mac.
+`Kut.Core.dll` must sit next to `Kut.Unity.asmdef`:
 
-After changing **`packages/Kut.Core`**, rebuild from repo root:
+`Assets/_Project/Scripts/Kut.Core.dll`
 
-```bash
-./tools/sync-core-to-unity.sh
-```
-
-If Unity still shows missing `Kut.Core` types: reimport this folder or restart the Editor.
+Unity only resolves asmdef precompiled references from that folder.

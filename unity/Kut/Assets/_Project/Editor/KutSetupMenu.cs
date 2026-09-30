@@ -27,10 +27,10 @@ namespace Kut.Unity.EditorTools
       EditorSceneManager.OpenScene(ScenePath);
       EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
 
-      var dllPath = Path.Combine(Application.dataPath, "Plugins", "Kut.Core.dll");
+      var dllPath = Path.Combine(Application.dataPath, "_Project", "Scripts", "Kut.Core.dll");
       if (!File.Exists(dllPath))
       {
-        Debug.LogError("KUT: Missing Assets/Plugins/Kut.Core.dll — git pull main or run ./tools/sync-core-to-unity.sh from repo root.");
+        Debug.LogError("KUT: Missing Assets/_Project/Scripts/Kut.Core.dll — re-download ZIP (main) or run ./tools/sync-core-to-unity.sh. See docs/unity-zip-setup.md.");
       }
       else
       {
