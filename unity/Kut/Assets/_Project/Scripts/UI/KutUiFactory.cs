@@ -9,6 +9,7 @@ namespace Kut.Unity.UI
   {
     public static Canvas CreateRootCanvas(string name)
     {
+      EnsureEventSystem();
       var go = new GameObject(name);
       var canvas = go.AddComponent<Canvas>();
       canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -117,6 +118,20 @@ namespace Kut.Unity.UI
       t.color = KutDesignTokens.TextPrimary;
       t.alignment = TextAnchor.UpperLeft;
       return t;
+    }
+
+    /// <summary>uGUI buttons/inputs need EventSystem + input module (not created by default in empty scenes).</summary>
+    private static void EnsureEventSystem()
+    {
+      if (Object.FindObjectOfType<EventSystem>() != null)
+      {
+        return;
+      }
+
+      var esGo = new GameObject("EventSystem");
+      esGo.AddComponent<EventSystem>();
+      esGo.AddComponent<StandaloneInputModule>();
+      Object.DontDestroyOnLoad(esGo);
     }
   }
 }

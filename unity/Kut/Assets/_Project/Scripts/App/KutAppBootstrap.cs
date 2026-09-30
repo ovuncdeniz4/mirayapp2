@@ -6,6 +6,7 @@ using Kut.Core.App;
 using Kut.Core.Commands;
 using Kut.Core.Levels;
 using Kut.Core.Meta;
+using Kut.Core.Objectives;
 using Kut.Core.Save;
 using Kut.Unity.Design;
 using Kut.Unity.Presentation;
@@ -46,6 +47,9 @@ namespace Kut.Unity.App
     private Text? _objectivesText;
     private BoardGridUi? _boardGrid;
     private ResultOverlayUi? _resultOverlay;
+    private KutToastUi? _toast;
+    private Image? _homePortrait;
+    private Transform? _collectionGridRoot;
     private Button? _totemBtn;
     private Button? _collectionBtn;
     private LevelSession? _levelSession;
@@ -68,6 +72,7 @@ namespace Kut.Unity.App
       BuildCollection(canvas.transform);
       _resultOverlay = canvas.gameObject.AddComponent<ResultOverlayUi>();
       _resultOverlay.Build(canvas.transform);
+      _toast = KutToastUi.Create(canvas.transform);
 
       ShowInitial();
     }
@@ -137,8 +142,10 @@ namespace Kut.Unity.App
     {
       _homePanel = KutUiFactory.Panel(root, "S02_Home");
       KutUiFactory.Title(_homePanel.transform, "KUT — Ana Ekran", 48);
+      _homePortrait = KutUiFactory.SpriteSlot(_homePanel.transform, "HomeAnimal",
+        new Vector2(0.62f, 0.52f), new Vector2(0.92f, 0.82f));
       _homeBody = KutUiFactory.Body(_homePanel.transform, "Body",
-        new Vector2(0.08f, 0.45f), new Vector2(0.92f, 0.78f));
+        new Vector2(0.08f, 0.45f), new Vector2(0.58f, 0.78f));
       KutUiFactory.PrimaryButton(_homePanel.transform, "Devam et",
         new Vector2(0.12f, 0.28f), new Vector2(0.88f, 0.38f)).onClick.AddListener(() =>
         StartLevel(GameShell.ResolveContinueLevelId(_save, _content)));
@@ -167,16 +174,41 @@ namespace Kut.Unity.App
       srt.offsetMax = Vector2.zero;
       scrollGo.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
 
-      var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup));
-      content.transform.SetParent(scrollGo.transform, false);
+      var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(Mask));
+      viewport.transform.SetParent(scrollGo.transform, false);
+      var vrt = viewport.GetComponent<RectTransform>();
+      vrt.anchorMin = Vector2.zero;
+      vrt.anchorMax = Vector2.one;
+      vrt.offsetMin = Vector2.zero;
+      vrt.offsetMax = Vector2.zero;
+      viewport.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
+      viewport.GetComponent<Mask>().showMaskGraphic = false;
+
+      var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+      content.transform.SetParent(viewport.transform, false);
       _mapListRoot = content.transform;
+      var crt = content.GetComponent<RectTransform>();
+      crt.anchorMin = new Vector2(0, 1);
+      crt.anchorMax = new Vector2(1, 1);
+      crt.pivot = new Vector2(0.5f, 1f);
+      crt.offsetMin = new Vector2(0, crt.offsetMin.y);
+      crt.offsetMax = new Vector2(0, crt.offsetMax.y);
       var vlg = content.GetComponent<VerticalLayoutGroup>();
       vlg.spacing = 8;
       vlg.childControlHeight = true;
       vlg.childForceExpandHeight = false;
+      vlg.childControlWidth = true;
+      vlg.childForceExpandWidth = true;
+      vlg.padding = new RectOffset(8, 8, 8, 8);
+      var fitter = content.GetComponent<ContentSizeFitter>();
+      fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+      fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
       var scroll = scrollGo.GetComponent<ScrollRect>();
-      scroll.content = content.GetComponent<RectTransform>();
+      scroll.viewport = vrt;
+      scroll.content = crt;
       scroll.horizontal = false;
+      scroll.vertical = true;
+      scroll.movementType = ScrollRect.MovementType.Clamped;
 
       KutUiFactory.PrimaryButton(_mapPanel.transform, "Geri",
         new Vector2(0.2f, 0.06f), new Vector2(0.8f, 0.14f)).onClick.AddListener(BackHome);
@@ -232,8 +264,28 @@ namespace Kut.Unity.App
     {
       _collectionPanel = KutUiFactory.Panel(root, "S07_Collection");
       KutUiFactory.Title(_collectionPanel.transform, "Koleksiyon", 48);
-      KutUiFactory.Body(_collectionPanel.transform, "Body",
-        new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.78f)).name = "CollectionBody";
+      var scroll = new GameObject("CollectionScroll", typeof(RectTransform), typeof(ScrollRect), typeof(Image));
+      scroll.transform.SetParent(_collectionPanel.transform, false);
+      var csrt = scroll.GetComponent<RectTransform>();
+      csrt.anchorMin = new Vector2(0.06f, 0.18f);
+      csrt.anchorMax = new Vector2(0.94f, 0.78f);
+      csrt.offsetMin = Vector2.zero;
+      csrt.offsetMax = Vector2.zero;
+      scroll.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
+      var gridGo = new GameObject("RelicGrid", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
+      gridGo.transform.SetParent(scroll.transform, false);
+      _collectionGridRoot = gridGo.transform;
+      var grid = gridGo.GetComponent<GridLayoutGroup>();
+      grid.cellSize = new Vector2(140, 180);
+      grid.spacing = new Vector2(12, 12);
+      grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+      grid.constraintCount = 3;
+      gridGo.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+      var cscroll = scroll.GetComponent<ScrollRect>();
+      cscroll.content = gridGo.GetComponent<RectTransform>();
+      cscroll.horizontal = false;
+      KutUiFactory.Body(_collectionPanel.transform, "CollectionSummary",
+        new Vector2(0.06f, 0.12f), new Vector2(0.94f, 0.17f), 26).name = "CollectionBody";
       KutUiFactory.PrimaryButton(_collectionPanel.transform, "Geri",
         new Vector2(0.2f, 0.08f), new Vector2(0.8f, 0.16f)).onClick.AddListener(BackHome);
     }
@@ -279,6 +331,7 @@ namespace Kut.Unity.App
       sb.AppendLine();
       sb.AppendLine("Kurgusal oyun — tarihsel şaman geleneği değildir.");
       _homeBody!.text = sb.ToString();
+      ApplyAnimalPortrait(_homePortrait, _save.AnimalId);
 
       SetMetaButton(_totemBtn, _save.TotemTabUnlocked, "Totem");
       SetMetaButton(_collectionBtn, _save.CollectionTabUnlocked, "Koleksiyon");
@@ -306,6 +359,11 @@ namespace Kut.Unity.App
       HideAll();
       RebuildMapList();
       _mapPanel.SetActive(true);
+      Canvas.ForceUpdateCanvases();
+      if (_mapListRoot != null)
+      {
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_mapListRoot.GetComponent<RectTransform>());
+      }
     }
 
     private void RebuildMapList()
@@ -395,7 +453,7 @@ namespace Kut.Unity.App
       _boardGrid.ActivateRequested -= OnActivateRequested;
       _boardGrid.SwapRequested += OnSwapRequested;
       _boardGrid.ActivateRequested += OnActivateRequested;
-      _boardGrid.Build(_levelPanel.transform, _levelSession.Engine.State);
+      _boardGrid.Build(_levelSession.Engine.State);
 
       RefreshLevelHud();
       HideAll();
@@ -412,7 +470,7 @@ namespace Kut.Unity.App
       var result = _levelSession.Submit(new SwapCommand(a, b));
       if (result.Events.Any(e => e.EventType == "swap_reverted"))
       {
-        ShowToast("Geçersiz hamle");
+        ShowToast("Geçersiz hamle — eşleşme yok");
       }
 
       _boardGrid.Refresh(_levelSession.Engine.State);
@@ -441,14 +499,16 @@ namespace Kut.Unity.App
       }
 
       var moves = _levelSession.Engine.MovesRemaining;
-      _levelHud!.text = $"{_activeLevelId} | Hamle: {moves}";
+      var chapter = _content.Chapters.Chapters.FirstOrDefault(c => c.Levels.Contains(_activeLevelId!));
+      var chapterLabel = chapter?.TitleTr ?? "";
+      _levelHud!.text = $"{chapterLabel}\n{_activeLevelId} | Hamle: {moves}";
       _levelHud.color = moves <= 3 ? KutDesignTokens.Danger : KutDesignTokens.TextPrimary;
       var sb = new StringBuilder();
       for (var i = 0; i < _levelSession.Objectives.Definitions.Count; i++)
       {
         var d = _levelSession.Objectives.Definitions[i];
         var mark = _levelSession.Objectives.IsObjectiveComplete(i) ? "✓" : " ";
-        sb.AppendLine($"[{mark}] {d.Type}: {_levelSession.Objectives.GetProgress(i)}/{d.Target}");
+        sb.AppendLine($"[{mark}] {ObjectiveLabelTr(d)}: {_levelSession.Objectives.GetProgress(i)}/{d.Target}");
       }
 
       _objectivesText!.text = sb.ToString();
@@ -544,17 +604,10 @@ namespace Kut.Unity.App
       var body = _collectionPanel.transform.Find("CollectionBody")?.GetComponent<Text>();
       if (body != null)
       {
-        var sb = new StringBuilder();
-        sb.AppendLine($"Relik: {_save.UnlockedCollectionIds.Count}/{_content.Collection.Items.Count}");
-        foreach (var item in _content.Collection.Items)
-        {
-          var owned = _save.UnlockedCollectionIds.Contains(item.Id);
-          sb.AppendLine($"{(owned ? "★" : "·")} [{item.Category}] {item.TitleTr}");
-        }
-
-        body.text = sb.ToString();
+        body.text = $"Relik: {_save.UnlockedCollectionIds.Count}/{_content.Collection.Items.Count}";
       }
 
+      RebuildCollectionGrid();
       _collectionPanel.SetActive(true);
     }
 
@@ -565,7 +618,77 @@ namespace Kut.Unity.App
       _homePanel.SetActive(true);
     }
 
-    private void ShowToast(string msg) => Debug.Log($"[Toast] {msg}");
+    private void RebuildCollectionGrid()
+    {
+      if (_collectionGridRoot == null)
+      {
+        return;
+      }
+
+      foreach (Transform child in _collectionGridRoot)
+      {
+        Destroy(child.gameObject);
+      }
+
+      foreach (var item in _content.Collection.Items)
+      {
+        var owned = _save.UnlockedCollectionIds.Contains(item.Id);
+        var card = new GameObject(item.Id, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+        card.transform.SetParent(_collectionGridRoot, false);
+        card.GetComponent<Image>().color = owned ? KutDesignTokens.PanelSurface : KutDesignTokens.BackgroundDeep;
+        card.GetComponent<LayoutElement>().minHeight = 180;
+
+        var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconGo.transform.SetParent(card.transform, false);
+        var irt = iconGo.GetComponent<RectTransform>();
+        irt.anchorMin = new Vector2(0.1f, 0.28f);
+        irt.anchorMax = new Vector2(0.9f, 0.95f);
+        irt.offsetMin = Vector2.zero;
+        irt.offsetMax = Vector2.zero;
+        var icon = iconGo.GetComponent<Image>();
+        icon.preserveAspect = true;
+        icon.color = owned ? Color.white : new Color(1, 1, 1, 0.25f);
+        var sprite = KutArtCatalog.TryRelic(item.Id);
+        if (sprite != null)
+        {
+          icon.sprite = sprite;
+        }
+
+        var titleGo = new GameObject("Title", typeof(RectTransform), typeof(Text));
+        titleGo.transform.SetParent(card.transform, false);
+        var trt = titleGo.GetComponent<RectTransform>();
+        trt.anchorMin = new Vector2(0.05f, 0.02f);
+        trt.anchorMax = new Vector2(0.95f, 0.26f);
+        trt.offsetMin = Vector2.zero;
+        trt.offsetMax = Vector2.zero;
+        var t = titleGo.GetComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.fontSize = 18;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.color = owned ? KutDesignTokens.TextPrimary : KutDesignTokens.TextMuted;
+        t.text = owned ? item.TitleTr : "?";
+      }
+    }
+
+    private static string ObjectiveLabelTr(ObjectiveDefinition d)
+    {
+      return d.Type switch
+      {
+        ObjectiveType.MakeMatches => "Eşleşme",
+        ObjectiveType.CollectElement => d.Element == "water" ? "Su topla" : d.Element == "fire" ? "Ateş topla" : "Toprak topla",
+        ObjectiveType.CascadeDepthInTurn => "Zincir",
+        ObjectiveType.CreateSpecial => "Özel oluştur",
+        ObjectiveType.ActivateSpecial => "Özel kullan",
+        ObjectiveType.ClearObstacle => d.Obstacle == "mud" ? "Çamur temizle" : "Sarmaşık kır",
+        _ => d.Type.ToString()
+      };
+    }
+
+    private void ShowToast(string msg)
+    {
+      Debug.Log($"[Toast] {msg}");
+      _toast?.Show(msg);
+    }
 
     private static void ApplyAnimalPortrait(Image? target, string animalId)
     {

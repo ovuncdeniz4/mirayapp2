@@ -23,7 +23,7 @@ namespace Kut.Unity.Presentation
     public event Action<GridPos, GridPos>? SwapRequested;
     public event Action<GridPos>? ActivateRequested;
 
-    public void Build(Transform parent, BoardState state)
+    public void Build(BoardState state)
     {
       for (var i = transform.childCount - 1; i >= 0; i--)
       {
@@ -36,18 +36,44 @@ namespace Kut.Unity.Presentation
       _width = state.Size.Width;
       _height = state.Size.Height;
 
+      var tray = KutArtCatalog.TryBoardTray();
+      if (tray != null)
+      {
+        var trayGo = new GameObject("BoardTray", typeof(RectTransform), typeof(Image));
+        trayGo.transform.SetParent(transform, false);
+        var trt = trayGo.GetComponent<RectTransform>();
+        trt.anchorMin = new Vector2(0.02f, 0.08f);
+        trt.anchorMax = new Vector2(0.98f, 0.92f);
+        trt.offsetMin = Vector2.zero;
+        trt.offsetMax = Vector2.zero;
+        var img = trayGo.GetComponent<Image>();
+        img.sprite = tray;
+        img.color = Color.white;
+        img.preserveAspect = false;
+        img.raycastTarget = false;
+      }
+
       var gridGo = new GameObject("Grid", typeof(RectTransform), typeof(GridLayoutGroup));
       gridGo.transform.SetParent(transform, false);
       var rt = gridGo.GetComponent<RectTransform>();
-      rt.anchorMin = new Vector2(0.05f, 0.22f);
-      rt.anchorMax = new Vector2(0.95f, 0.76f);
+      rt.anchorMin = new Vector2(0.06f, 0.12f);
+      rt.anchorMax = new Vector2(0.94f, 0.88f);
       rt.offsetMin = Vector2.zero;
       rt.offsetMax = Vector2.zero;
       var layout = gridGo.GetComponent<GridLayoutGroup>();
       layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
       layout.constraintCount = _width;
-      layout.spacing = new Vector2(8, 8);
-      layout.cellSize = new Vector2(100, 100);
+      layout.spacing = new Vector2(6, 6);
+      layout.childAlignment = TextAnchor.MiddleCenter;
+      var hostWidth = ((RectTransform)transform).rect.width;
+      if (hostWidth < 100f)
+      {
+        hostWidth = 900f;
+      }
+
+      var cell = Mathf.Floor((hostWidth * 0.88f - layout.spacing.x * (_width - 1)) / _width);
+      cell = Mathf.Clamp(cell, 48f, 120f);
+      layout.cellSize = new Vector2(cell, cell);
 
       for (var y = 0; y < _height; y++)
       {
