@@ -17,7 +17,8 @@ GitHub Desktop is **not** required — only the cloned repo folder.
 
 ## Steps (2022.3 — Monterey / 2015 Mac)
 
-1. From repo root:
+1. **`Kut.Core.dll`** is included under `Assets/Plugins/` — Unity should compile after pull.  
+   After you change C# in `packages/Kut.Core`, run from repo root:
 
 ```bash
 ./tools/sync-core-to-unity.sh

@@ -27,7 +27,15 @@ namespace Kut.Unity.EditorTools
       EditorSceneManager.OpenScene(ScenePath);
       EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
 
-      Debug.Log("KUT: Main scene ready. Assign nothing else — press Play. Run ./tools/sync-core-to-unity.sh if Kut.Core.dll is missing.");
+      var dllPath = Path.Combine(Application.dataPath, "Plugins", "Kut.Core.dll");
+      if (!File.Exists(dllPath))
+      {
+        Debug.LogError("KUT: Missing Assets/Plugins/Kut.Core.dll — git pull main or run ./tools/sync-core-to-unity.sh from repo root.");
+      }
+      else
+      {
+        Debug.Log("KUT: Main scene ready — press Play.");
+      }
     }
 
     [MenuItem("KUT/Open Setup Doc")]
