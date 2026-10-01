@@ -31,7 +31,8 @@ namespace Kut.Unity.App
       _save = save;
       _audio = audio;
       _haptics = haptics;
-      _animationQueue.Configure(board, save, audio, haptics);
+      var vfx = board.GetComponent<BoardVfxOverlay>();
+      _animationQueue.Configure(board, save, audio, haptics, vfx);
     }
 
     public event Action? InvalidSwap;

@@ -18,7 +18,7 @@ namespace Kut.Unity.Presentation
     {
       public GridPos Pos;
       public Button Button = null!;
-      public Image Image = null!;
+      public Image TileImage = null!;
       public RectTransform Rect = null!;
       public Outline Outline = null!;
     }
@@ -110,8 +110,16 @@ namespace Kut.Unity.Presentation
       {
         var slot = _cells[i];
         var cell = state.GetCell(slot.Pos);
-        ApplyCellVisual(slot.Image, cell);
+        ApplyCellVisual(slot.TileImage, cell);
         slot.Outline.enabled = _selected.HasValue && _selected.Value.Equals(slot.Pos);
+        if (_selected.HasValue && _selected.Value.Equals(slot.Pos))
+        {
+          slot.Rect.localScale = Vector3.one * 0.95f;
+        }
+        else
+        {
+          slot.Rect.localScale = Vector3.one;
+        }
       }
     }
 
@@ -160,7 +168,7 @@ namespace Kut.Unity.Presentation
         var slot = GetSlot(cells[i]);
         if (slot != null)
         {
-          StartCoroutine(FlashCell(slot.Image, duration));
+          StartCoroutine(FlashCell(slot.TileImage, duration));
         }
 
         if (stagger > 0f)
@@ -218,12 +226,45 @@ namespace Kut.Unity.Presentation
       sb.Rect.anchoredPosition = tb;
     }
 
+    public RectTransform? GetCellRect(GridPos pos) => GetSlot(pos)?.Rect;
+
     private CellSlot CreateCell(Transform parent, GridPos pos)
     {
       var go = new GameObject($"Cell_{pos.X}_{pos.Y}", typeof(RectTransform), typeof(Image), typeof(Button), typeof(Outline));
       go.transform.SetParent(parent, false);
-      var img = go.GetComponent<Image>();
-      img.color = KutDesignTokens.BackgroundDeep;
+      var rootImg = go.GetComponent<Image>();
+      rootImg.color = new Color(0, 0, 0, 0);
+      rootImg.raycastTarget = true;
+
+      var recessGo = new GameObject("Recess", typeof(RectTransform), typeof(Image));
+      recessGo.transform.SetParent(go.transform, false);
+      var rrt = recessGo.GetComponent<RectTransform>();
+      rrt.anchorMin = Vector2.zero;
+      rrt.anchorMax = Vector2.one;
+      rrt.offsetMin = Vector2.zero;
+      rrt.offsetMax = Vector2.zero;
+      var recessImg = recessGo.GetComponent<Image>();
+      var recess = KutArtCatalog.TryCellRecess();
+      if (recess != null)
+      {
+        recessImg.sprite = recess;
+        recessImg.color = Color.white;
+        recessImg.raycastTarget = false;
+      }
+      else
+      {
+        recessImg.color = KutDesignTokens.BackgroundDeep;
+      }
+
+      var tileGo = new GameObject("Tile", typeof(RectTransform), typeof(Image));
+      tileGo.transform.SetParent(go.transform, false);
+      var trt = tileGo.GetComponent<RectTransform>();
+      trt.anchorMin = new Vector2(0.08f, 0.08f);
+      trt.anchorMax = new Vector2(0.92f, 0.92f);
+      trt.offsetMin = Vector2.zero;
+      trt.offsetMax = Vector2.zero;
+      var img = tileGo.GetComponent<Image>();
+      img.raycastTarget = false;
       var outline = go.GetComponent<Outline>();
       outline.effectColor = KutDesignTokens.AccentGold;
       outline.effectDistance = new Vector2(3, 3);
@@ -242,7 +283,7 @@ namespace Kut.Unity.Presentation
       {
         Pos = pos,
         Button = btn,
-        Image = img,
+        TileImage = img,
         Rect = go.GetComponent<RectTransform>(),
         Outline = outline
       };

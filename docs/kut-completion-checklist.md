@@ -24,8 +24,18 @@ Unity **2022.3.62f1**, proje: `unity/Kut`.
 
 ## Art & manifest
 
-- [ ] `./tools/validate-art-manifest.sh` OK
-- [ ] Tahta tray + panel frame görünür
+- [ ] `./tools/validate-art-manifest.sh` OK (40 PNG id)
+- [ ] Tahta tray + panel frame + button nine-slice
+- [ ] Hücre recess (`ui_cell_recess`) tahtada görünür
+- [ ] Harita parallax arka plan + mist
+- [ ] Glyph wheel töreni (reduced motion: fade only)
+
+## Visual / SFX polish
+
+- [ ] Noto Sans TR (`Resources/Fonts/NotoSans-Regular.ttf`)
+- [ ] §22 VFX: chime line, bomb ring, drum pulse (uGUI overlay)
+- [ ] Ses: `Resources/Audio/SFX/*.wav` (procedural placeholder clip’ler)
+- [ ] Harita müziği Ch1/Ch2 ambient loop
 
 ## CI
 
