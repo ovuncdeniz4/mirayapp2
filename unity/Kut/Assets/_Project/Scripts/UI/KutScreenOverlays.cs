@@ -151,7 +151,7 @@ namespace Kut.Unity.UI
       _root = KutUiFactory.BorderedPanel(parent, "Tutorial");
       KutUiFactory.Title(_root.transform, "İpucu", 40);
       _body = KutUiFactory.Body(_root.transform, "Body", new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.7f), 30);
-      KutUiFactory.PrimaryButton(_root.transform, "Atla", new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f));
+      KutUiFactory.PrimaryButton(_root.transform, "Tamam", new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f));
       _root.SetActive(false);
     }
 
@@ -164,10 +164,17 @@ namespace Kut.Unity.UI
       }
 
       _body.text = body;
-      var skip = _root.GetComponentInChildren<Button>();
-      skip.onClick.RemoveAllListeners();
-      skip.onClick.AddListener(() => { _root.SetActive(false); onDismiss(); });
-      skip.gameObject.SetActive(canSkip);
+      var dismiss = _root.transform.Find("Tamam")?.GetComponent<Button>()
+        ?? _root.GetComponentInChildren<Button>();
+      dismiss.onClick.RemoveAllListeners();
+      dismiss.onClick.AddListener(() => { _root.SetActive(false); onDismiss(); });
+      var dismissLabel = dismiss.GetComponentInChildren<Text>();
+      if (dismissLabel != null)
+      {
+        dismissLabel.text = canSkip ? "Atla" : "Tamam";
+      }
+
+      dismiss.gameObject.SetActive(true);
       _root.SetActive(true);
     }
   }

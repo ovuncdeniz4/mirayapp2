@@ -17,7 +17,6 @@ namespace Kut.Unity.Presentation
     private sealed class CellSlot
     {
       public GridPos Pos;
-      public Button Button = null!;
       public Image TileImage = null!;
       public RectTransform Rect = null!;
       public Outline Outline = null!;
@@ -230,7 +229,7 @@ namespace Kut.Unity.Presentation
 
     private CellSlot CreateCell(Transform parent, GridPos pos)
     {
-      var go = new GameObject($"Cell_{pos.X}_{pos.Y}", typeof(RectTransform), typeof(Image), typeof(Button), typeof(Outline));
+      var go = new GameObject($"Cell_{pos.X}_{pos.Y}", typeof(RectTransform), typeof(Image), typeof(Outline));
       go.transform.SetParent(parent, false);
       var rootImg = go.GetComponent<Image>();
       rootImg.color = new Color(0, 0, 0, 0);
@@ -273,16 +272,14 @@ namespace Kut.Unity.Presentation
       var trigger = go.AddComponent<EventTrigger>();
       AddPointer(trigger, EventTriggerType.PointerDown, _ => OnPointerDown(pos));
       AddPointer(trigger, EventTriggerType.PointerUp, _ => OnPointerUp(pos));
+      AddPointer(trigger, EventTriggerType.PointerClick, _ => OnCellClicked(pos));
       AddPointer(trigger, EventTriggerType.BeginDrag, _ => { });
       AddPointer(trigger, EventTriggerType.Drag, data => OnDrag(pos, data));
-
-      var btn = go.GetComponent<Button>();
-      btn.onClick.AddListener(() => OnCellClicked(pos));
 
       return new CellSlot
       {
         Pos = pos,
-        Button = btn,
+        Button = null!,
         TileImage = img,
         Rect = go.GetComponent<RectTransform>(),
         Outline = outline

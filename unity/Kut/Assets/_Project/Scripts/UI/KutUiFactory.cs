@@ -157,6 +157,7 @@ namespace Kut.Unity.UI
       t.fontSize = size;
       t.color = KutDesignTokens.TextPrimary;
       t.alignment = TextAnchor.UpperLeft;
+      t.raycastTarget = false;
       return t;
     }
 
