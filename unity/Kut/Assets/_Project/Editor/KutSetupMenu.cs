@@ -20,6 +20,14 @@ namespace Kut.Unity.EditorTools
       Directory.CreateDirectory(Path.GetDirectoryName(ScenePath)!);
       var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
+      var camGo = new GameObject("Main Camera");
+      camGo.tag = "MainCamera";
+      var cam = camGo.AddComponent<Camera>();
+      cam.clearFlags = CameraClearFlags.SolidColor;
+      cam.backgroundColor = new Color(0.102f, 0.082f, 0.125f); // KutDesignTokens.BackgroundDeep #1A1520
+      cam.orthographic = true;
+      camGo.AddComponent<AudioListener>();
+
       var bootstrap = new GameObject("KUT");
       bootstrap.AddComponent<KutAppBootstrap>();
 

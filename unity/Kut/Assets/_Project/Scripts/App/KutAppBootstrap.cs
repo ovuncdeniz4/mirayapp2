@@ -69,6 +69,8 @@ namespace Kut.Unity.App
 
     private void Awake()
     {
+      KutRuntimeSceneSetup.EnsureCameraAndAudioListener();
+
       _savePath = UnitySavePaths.SaveFilePath;
       _content = UnityContentLoader.LoadBundle();
       _save = SaveStore.Load(_savePath);
