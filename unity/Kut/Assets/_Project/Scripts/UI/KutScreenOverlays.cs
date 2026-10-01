@@ -247,6 +247,12 @@ namespace Kut.Unity.UI
       var list = new System.Collections.Generic.List<string>();
       foreach (var raw in asset.text.Split('\n'))
       {
+        // Ceremony JSON array entries are indented; skip "version" / "linesTr" keys.
+        if (!raw.StartsWith("    \""))
+        {
+          continue;
+        }
+
         var line = raw.Trim();
         var q0 = line.IndexOf('"');
         if (q0 < 0)
