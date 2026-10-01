@@ -69,6 +69,8 @@ namespace Kut.Unity.App
 
     private void Awake()
     {
+      KutRuntimeSceneSetup.EnsureCameraAndAudioListener();
+
       _savePath = UnitySavePaths.SaveFilePath;
       _content = UnityContentLoader.LoadBundle();
       _save = SaveStore.Load(_savePath);
@@ -403,6 +405,7 @@ namespace Kut.Unity.App
       _boardGrid.SwapRequested += OnSwapRequested;
       _boardGrid.ActivateRequested += OnActivateRequested;
       _boardGrid.Build(_levelSession.Engine.State);
+      _boardGrid.InputLocked = false;
       _presentation!.Init(_boardGrid, _animQueue!, _save, _audio!, _haptics);
       _presentation.InvalidSwap -= OnInvalidSwap;
       _presentation.InvalidSwap += OnInvalidSwap;

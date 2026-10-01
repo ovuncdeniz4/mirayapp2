@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using Kut.Core.Save;
 using Kut.Unity.Design;
 using UnityEngine;
@@ -152,7 +151,7 @@ namespace Kut.Unity.UI
       _root = KutUiFactory.BorderedPanel(parent, "Tutorial");
       KutUiFactory.Title(_root.transform, "İpucu", 40);
       _body = KutUiFactory.Body(_root.transform, "Body", new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.7f), 30);
-      KutUiFactory.PrimaryButton(_root.transform, "Atla", new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f));
+      KutUiFactory.PrimaryButton(_root.transform, "Tamam", new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f));
       _root.SetActive(false);
     }
 
@@ -165,10 +164,17 @@ namespace Kut.Unity.UI
       }
 
       _body.text = body;
-      var skip = _root.GetComponentInChildren<Button>();
-      skip.onClick.RemoveAllListeners();
-      skip.onClick.AddListener(() => { _root.SetActive(false); onDismiss(); });
-      skip.gameObject.SetActive(canSkip);
+      var dismiss = _root.transform.Find("Tamam")?.GetComponent<Button>()
+        ?? _root.GetComponentInChildren<Button>();
+      dismiss.onClick.RemoveAllListeners();
+      dismiss.onClick.AddListener(() => { _root.SetActive(false); onDismiss(); });
+      var dismissLabel = dismiss.GetComponentInChildren<Text>();
+      if (dismissLabel != null)
+      {
+        dismissLabel.text = canSkip ? "Atla" : "Tamam";
+      }
+
+      dismiss.gameObject.SetActive(true);
       _root.SetActive(true);
     }
   }
@@ -207,32 +213,7 @@ namespace Kut.Unity.UI
 
     private System.Collections.IEnumerator Run(bool reducedMotion, Action onDone)
     {
-      var json = Resources.Load<TextAsset>("Content/Config/ceremony_strings");
-      var lines = new[] { "Kut işaretleri dönüyor…" };
-      if (json != null)
-      {
-        try
-        {
-          using var doc = JsonDocument.Parse(json.text);
-          if (doc.RootElement.TryGetProperty("linesTr", out var arr))
-          {
-            var list = new System.Collections.Generic.List<string>();
-            foreach (var el in arr.EnumerateArray())
-            {
-              list.Add(el.GetString() ?? "");
-            }
-
-            if (list.Count > 0)
-            {
-              lines = list.ToArray();
-            }
-          }
-        }
-        catch
-        {
-          // fallback lines
-        }
-      }
+      var lines = LoadCeremonyLines();
 
       var duration = reducedMotion ? 0.4f : 2.5f;
       var t = 0f;
@@ -260,6 +241,42 @@ namespace Kut.Unity.UI
       yield return FadeOut();
       _root.SetActive(false);
       onDone();
+    }
+
+    private static string[] LoadCeremonyLines()
+    {
+      var asset = Resources.Load<TextAsset>("Content/Config/ceremony_strings");
+      if (asset == null)
+      {
+        return new[] { "Kut işaretleri dönüyor…" };
+      }
+
+      var list = new System.Collections.Generic.List<string>();
+      foreach (var raw in asset.text.Split('\n'))
+      {
+        // Ceremony JSON array entries are indented; skip "version" / "linesTr" keys.
+        if (!raw.StartsWith("    \""))
+        {
+          continue;
+        }
+
+        var line = raw.Trim();
+        var q0 = line.IndexOf('"');
+        if (q0 < 0)
+        {
+          continue;
+        }
+
+        var q1 = line.IndexOf('"', q0 + 1);
+        if (q1 <= q0)
+        {
+          continue;
+        }
+
+        list.Add(line.Substring(q0 + 1, q1 - q0 - 1));
+      }
+
+      return list.Count > 0 ? list.ToArray() : new[] { "Kut işaretleri dönüyor…" };
     }
 
     private System.Collections.IEnumerator FadeOut()

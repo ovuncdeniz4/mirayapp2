@@ -45,32 +45,40 @@ namespace Kut.Unity.App
       }
 
       _boardGrid.InputLocked = true;
-      var result = session.Submit(command);
-      var hadRevert = false;
-      foreach (var evt in result.Events)
+      try
       {
-        if (evt.EventType == "swap_reverted")
+        var result = session.Submit(command);
+        var hadRevert = false;
+        foreach (var evt in result.Events)
         {
-          hadRevert = true;
+          if (evt.EventType == "swap_reverted")
+          {
+            hadRevert = true;
+          }
         }
-      }
 
-      if (command is SwapCommand swap && hadRevert)
-      {
-        _boardGrid.PlayInvalidSwapFeedback(swap.From, swap.To);
-      }
+        if (command is SwapCommand swap && hadRevert)
+        {
+          _boardGrid.PlayInvalidSwapFeedback(swap.From, swap.To);
+        }
 
-      _animationQueue.Play(result.Events, session.Engine.State, () =>
+        _animationQueue.Play(result.Events, session.Engine.State, () =>
+        {
+          _boardGrid.Refresh(session.Engine.State);
+          _boardGrid.InputLocked = false;
+          if (hadRevert)
+          {
+            InvalidSwap?.Invoke();
+          }
+
+          onComplete?.Invoke();
+        });
+      }
+      catch
       {
-        _boardGrid.Refresh(session.Engine.State);
         _boardGrid.InputLocked = false;
-        if (hadRevert)
-        {
-          InvalidSwap?.Invoke();
-        }
-
-        onComplete?.Invoke();
-      });
+        throw;
+      }
     }
   }
 }
