@@ -31,6 +31,12 @@ Editor: **2022.3.62f1**
 
 **KUT → Create Main Scene And Open** → **Play**
 
+ZIP içinde ayrıca dolu olmalı:
+
+- `Assets/_Project/Resources/Fonts/NotoSans-Regular.ttf`
+- `Assets/_Project/Resources/Audio/` (SFX + Music)
+- `Assets/_Project/Resources/Art/` (Map/, güncel UI v2 PNG’ler)
+
 ## 5. Still red errors?
 
 1. Quit Unity  

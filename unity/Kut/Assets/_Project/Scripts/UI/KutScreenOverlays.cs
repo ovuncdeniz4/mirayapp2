@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using Kut.Core.Save;
 using Kut.Unity.Design;
 using UnityEngine;
@@ -207,32 +206,7 @@ namespace Kut.Unity.UI
 
     private System.Collections.IEnumerator Run(bool reducedMotion, Action onDone)
     {
-      var json = Resources.Load<TextAsset>("Content/Config/ceremony_strings");
-      var lines = new[] { "Kut işaretleri dönüyor…" };
-      if (json != null)
-      {
-        try
-        {
-          using var doc = JsonDocument.Parse(json.text);
-          if (doc.RootElement.TryGetProperty("linesTr", out var arr))
-          {
-            var list = new System.Collections.Generic.List<string>();
-            foreach (var el in arr.EnumerateArray())
-            {
-              list.Add(el.GetString() ?? "");
-            }
-
-            if (list.Count > 0)
-            {
-              lines = list.ToArray();
-            }
-          }
-        }
-        catch
-        {
-          // fallback lines
-        }
-      }
+      var lines = LoadCeremonyLines();
 
       var duration = reducedMotion ? 0.4f : 2.5f;
       var t = 0f;
@@ -260,6 +234,36 @@ namespace Kut.Unity.UI
       yield return FadeOut();
       _root.SetActive(false);
       onDone();
+    }
+
+    private static string[] LoadCeremonyLines()
+    {
+      var asset = Resources.Load<TextAsset>("Content/Config/ceremony_strings");
+      if (asset == null)
+      {
+        return new[] { "Kut işaretleri dönüyor…" };
+      }
+
+      var list = new System.Collections.Generic.List<string>();
+      foreach (var raw in asset.text.Split('\n'))
+      {
+        var line = raw.Trim();
+        var q0 = line.IndexOf('"');
+        if (q0 < 0)
+        {
+          continue;
+        }
+
+        var q1 = line.IndexOf('"', q0 + 1);
+        if (q1 <= q0)
+        {
+          continue;
+        }
+
+        list.Add(line.Substring(q0 + 1, q1 - q0 - 1));
+      }
+
+      return list.Count > 0 ? list.ToArray() : new[] { "Kut işaretleri dönüyor…" };
     }
 
     private System.Collections.IEnumerator FadeOut()

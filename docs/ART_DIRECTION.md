@@ -66,7 +66,12 @@ One icon per `content/collection/catalog.json` entry (`relic_*` ids).
 | Asset id | Usage |
 |----------|--------|
 | `ui_board_tray` | 9:16-friendly stone board frame behind 8×8 grid |
-| `ui_panel_frame` | Parchment/wood panel corner treatment (optional stretch) |
+| `ui_panel_frame` | Parchment/wood panel corner treatment (nine-slice) |
+| `ui_button_primary` | Primary CTA nine-slice |
+| `ui_cell_recess` | Board cell stone recess behind tiles |
+| `ui_glyph_wheel` | Onboarding ceremony wheel |
+| `map_bg_ch1` / `map_bg_ch2` | Map parallax backgrounds |
+| `map_mist_overlay` | Locked chapter/level mist |
 
 ## Motion & VFX hooks (§22)
 
