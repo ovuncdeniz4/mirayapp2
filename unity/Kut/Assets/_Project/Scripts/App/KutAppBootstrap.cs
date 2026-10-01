@@ -30,7 +30,7 @@ namespace Kut.Unity.App
     private GameObject _onboardingPanel = null!;
     private GameObject _onboardingRevealPanel = null!;
     private GameObject _homePanel = null!;
-    private GameObject _mapPanel = null!;
+    private MapPanelUi? _mapUi;
     private GameObject _levelPanel = null!;
     private GameObject _animalPanel = null!;
     private GameObject _totemPanel = null!;
@@ -44,7 +44,6 @@ namespace Kut.Unity.App
     private InputField? _dayInput;
     private Text? _revealText;
     private Text? _homeBody;
-    private Transform? _mapListRoot;
     private Text? _levelHud;
     private Text? _objectivesText;
     private BoardGridUi? _boardGrid;
@@ -160,7 +159,7 @@ namespace Kut.Unity.App
       _onboardingPanel.SetActive(false);
       _onboardingRevealPanel.SetActive(false);
       _homePanel.SetActive(false);
-      _mapPanel.SetActive(false);
+      _mapUi?.Hide();
       _levelPanel.SetActive(false);
       _animalPanel.SetActive(false);
       _totemPanel.SetActive(false);
@@ -170,7 +169,7 @@ namespace Kut.Unity.App
 
     private void BuildOnboarding(Transform root)
     {
-      _onboardingPanel = KutUiFactory.Panel(root, "S01_Onboarding");
+      _onboardingPanel = KutUiFactory.BorderedPanel(root, "S01_Onboarding");
       KutUiFactory.Title(_onboardingPanel.transform, "KUT — Ruh Töreni");
       KutUiFactory.Body(_onboardingPanel.transform, "Disclaimer",
         new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.8f), 24).text =
@@ -187,7 +186,7 @@ namespace Kut.Unity.App
 
     private void BuildOnboardingReveal(Transform root)
     {
-      _onboardingRevealPanel = KutUiFactory.Panel(root, "S01b_Reveal");
+      _onboardingRevealPanel = KutUiFactory.BorderedPanel(root, "S01b_Reveal");
       KutUiFactory.Title(_onboardingRevealPanel.transform, "Ruh hayvanın", 48);
       _revealPortrait = KutUiFactory.SpriteSlot(_onboardingRevealPanel.transform, "RevealPortrait",
         new Vector2(0.32f, 0.52f), new Vector2(0.68f, 0.78f));
@@ -205,7 +204,7 @@ namespace Kut.Unity.App
 
     private void BuildHome(Transform root)
     {
-      _homePanel = KutUiFactory.Panel(root, "S02_Home");
+      _homePanel = KutUiFactory.BorderedPanel(root, "S02_Home");
       KutUiFactory.Title(_homePanel.transform, "KUT — Ana Ekran", 48);
       _homePortrait = KutUiFactory.SpriteSlot(_homePanel.transform, "HomeAnimal",
         new Vector2(0.62f, 0.52f), new Vector2(0.92f, 0.82f));
@@ -230,60 +229,13 @@ namespace Kut.Unity.App
 
     private void BuildMap(Transform root)
     {
-      _mapPanel = KutUiFactory.Panel(root, "S03_Map");
-      KutUiFactory.Title(_mapPanel.transform, "Harita", 48);
-      var scrollGo = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect), typeof(Image));
-      scrollGo.transform.SetParent(_mapPanel.transform, false);
-      var srt = scrollGo.GetComponent<RectTransform>();
-      srt.anchorMin = new Vector2(0.06f, 0.18f);
-      srt.anchorMax = new Vector2(0.94f, 0.78f);
-      srt.offsetMin = Vector2.zero;
-      srt.offsetMax = Vector2.zero;
-      scrollGo.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
-
-      var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(Mask));
-      viewport.transform.SetParent(scrollGo.transform, false);
-      var vrt = viewport.GetComponent<RectTransform>();
-      vrt.anchorMin = Vector2.zero;
-      vrt.anchorMax = Vector2.one;
-      vrt.offsetMin = Vector2.zero;
-      vrt.offsetMax = Vector2.zero;
-      viewport.GetComponent<Image>().color = KutDesignTokens.PanelSurface;
-      viewport.GetComponent<Mask>().showMaskGraphic = false;
-
-      var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-      content.transform.SetParent(viewport.transform, false);
-      _mapListRoot = content.transform;
-      var crt = content.GetComponent<RectTransform>();
-      crt.anchorMin = new Vector2(0, 1);
-      crt.anchorMax = new Vector2(1, 1);
-      crt.pivot = new Vector2(0.5f, 1f);
-      crt.offsetMin = new Vector2(0, crt.offsetMin.y);
-      crt.offsetMax = new Vector2(0, crt.offsetMax.y);
-      var vlg = content.GetComponent<VerticalLayoutGroup>();
-      vlg.spacing = 8;
-      vlg.childControlHeight = true;
-      vlg.childForceExpandHeight = false;
-      vlg.childControlWidth = true;
-      vlg.childForceExpandWidth = true;
-      vlg.padding = new RectOffset(8, 8, 8, 8);
-      var fitter = content.GetComponent<ContentSizeFitter>();
-      fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-      fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-      var scroll = scrollGo.GetComponent<ScrollRect>();
-      scroll.viewport = vrt;
-      scroll.content = crt;
-      scroll.horizontal = false;
-      scroll.vertical = true;
-      scroll.movementType = ScrollRect.MovementType.Clamped;
-
-      KutUiFactory.PrimaryButton(_mapPanel.transform, "Geri",
-        new Vector2(0.2f, 0.06f), new Vector2(0.8f, 0.14f)).onClick.AddListener(BackHome);
+      _mapUi = root.gameObject.AddComponent<MapPanelUi>();
+      _mapUi.Build(root, BackHome);
     }
 
     private void BuildLevel(Transform root)
     {
-      _levelPanel = KutUiFactory.Panel(root, "S04_Level");
+      _levelPanel = KutUiFactory.BorderedPanel(root, "S04_Level");
       _levelHud = KutUiFactory.Body(_levelPanel.transform, "Hud",
         new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.96f), 34);
       _objectivesText = KutUiFactory.Body(_levelPanel.transform, "Objectives",
@@ -297,6 +249,7 @@ namespace Kut.Unity.App
       bhRt.offsetMin = Vector2.zero;
       bhRt.offsetMax = Vector2.zero;
       _boardGrid = boardHost.AddComponent<BoardGridUi>();
+      boardHost.AddComponent<BoardVfxOverlay>();
       _animQueue = boardHost.AddComponent<PresentationAnimationQueue>();
       _presentation = boardHost.AddComponent<LevelPresentationController>();
 
@@ -376,7 +329,7 @@ namespace Kut.Unity.App
       }
 
       HideAll();
-      _ceremony!.Play(() =>
+      _ceremony!.Play(_save, () =>
       {
         GameShell.CompleteOnboarding(_save, month, day);
         SaveStore.Save(_savePath, _save);
@@ -433,89 +386,9 @@ namespace Kut.Unity.App
     private void ShowMap()
     {
       HideAll();
-      RebuildMapList();
-      _mapPanel.SetActive(true);
-      Canvas.ForceUpdateCanvases();
-      if (_mapListRoot != null)
-      {
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_mapListRoot.GetComponent<RectTransform>());
-      }
-    }
-
-    private void RebuildMapList()
-    {
-      if (_mapListRoot == null)
-      {
-        return;
-      }
-
-      foreach (Transform child in _mapListRoot)
-      {
-        Destroy(child.gameObject);
-      }
-
-      var global = 0;
-      foreach (var chapter in _content.Chapters.Chapters)
-      {
-        var accessible = MetaProgression.CanAccessChapter(chapter, _save, _content.Chapters);
-        AddMapHeader(chapter.TitleTr + (accessible ? "" : " 🔒"));
-        if (!accessible)
-        {
-          global += chapter.Levels.Count;
-          continue;
-        }
-
-        foreach (var levelId in chapter.Levels)
-        {
-          global++;
-          var idx = global;
-          var locked = idx > _save.HighestUnlockedLevel;
-          var done = _save.Levels.TryGetValue(levelId, out var e) && e.Completed;
-          if (locked)
-          {
-            AddMapHeader($"  🔒 {idx,2}. {levelId}");
-            continue;
-          }
-
-          var label = $"{(done ? "✓" : "→")} {idx,2}. {levelId}";
-          var captured = levelId;
-          AddMapButton(label, () => StartLevel(captured));
-        }
-      }
-    }
-
-    private void AddMapHeader(string text)
-    {
-      var go = new GameObject("Header", typeof(RectTransform), typeof(Text));
-      go.transform.SetParent(_mapListRoot, false);
-      var t = go.GetComponent<Text>();
-      t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-      t.fontSize = 28;
-      t.color = KutDesignTokens.TextMuted;
-      t.text = text;
-    }
-
-    private void AddMapButton(string label, Action onClick)
-    {
-      var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
-      go.transform.SetParent(_mapListRoot, false);
-      go.GetComponent<Image>().color = KutDesignTokens.AccentGold;
-      go.GetComponent<LayoutElement>().minHeight = 72;
-      var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
-      textGo.transform.SetParent(go.transform, false);
-      var txt = textGo.GetComponent<Text>();
-      txt.text = label;
-      txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-      txt.fontSize = 30;
-      txt.color = KutDesignTokens.BackgroundDeep;
-      txt.alignment = TextAnchor.MiddleCenter;
-      var trt = textGo.GetComponent<RectTransform>();
-      trt.anchorMin = Vector2.zero;
-      trt.anchorMax = Vector2.one;
-      trt.offsetMin = Vector2.zero;
-      trt.offsetMax = Vector2.zero;
-      var btn = go.GetComponent<Button>();
-      btn.onClick.AddListener(() => onClick());
+      _mapUi?.Rebuild(_save, _content, StartLevel);
+      _mapUi?.Show();
+      _audio?.PlayMusicForChapter(_save.Chapter2Complete ? 2 : 1);
     }
 
     private void StartLevel(string levelId)
@@ -797,7 +670,7 @@ namespace Kut.Unity.App
         trt.offsetMin = Vector2.zero;
         trt.offsetMax = Vector2.zero;
         var t = titleGo.GetComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.font = KutDesignTokens.UiFont;
         t.fontSize = 18;
         t.alignment = TextAnchor.MiddleCenter;
         t.color = owned ? KutDesignTokens.TextPrimary : KutDesignTokens.TextMuted;

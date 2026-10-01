@@ -70,7 +70,7 @@ namespace Kut.Unity.UI
       go.transform.SetParent(parent, false);
       var t = go.GetComponent<Text>();
       t.text = text;
-      t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      t.font = KutDesignTokens.UiFont;
       t.fontSize = size;
       t.color = KutDesignTokens.TextPrimary;
       t.alignment = TextAnchor.UpperCenter;
@@ -84,20 +84,37 @@ namespace Kut.Unity.UI
 
     public static Button PrimaryButton(Transform parent, string label, Vector2 anchorMin, Vector2 anchorMax)
     {
-      var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
+      var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+      go.GetComponent<LayoutElement>().minHeight = 48;
       go.transform.SetParent(parent, false);
       var rt = go.GetComponent<RectTransform>();
       rt.anchorMin = anchorMin;
       rt.anchorMax = anchorMax;
       rt.offsetMin = Vector2.zero;
       rt.offsetMax = Vector2.zero;
-      go.GetComponent<Image>().color = KutDesignTokens.AccentGold;
+      var btnImg = go.GetComponent<Image>();
+      var btnSprite = KutArtCatalog.TryPrimaryButton();
+      if (btnSprite != null)
+      {
+        btnImg.sprite = btnSprite;
+        btnImg.type = Image.Type.Sliced;
+        btnImg.color = Color.white;
+      }
+      else
+      {
+        btnImg.color = KutDesignTokens.AccentGold;
+      }
+
+      var btn = go.GetComponent<Button>();
+      var colors = btn.colors;
+      colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+      btn.colors = colors;
 
       var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
       textGo.transform.SetParent(go.transform, false);
       var txt = textGo.GetComponent<Text>();
       txt.text = label;
-      txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      txt.font = KutDesignTokens.UiFont;
       txt.fontSize = 36;
       txt.color = KutDesignTokens.BackgroundDeep;
       txt.alignment = TextAnchor.MiddleCenter;
@@ -136,7 +153,7 @@ namespace Kut.Unity.UI
       rt.offsetMin = Vector2.zero;
       rt.offsetMax = Vector2.zero;
       var t = go.GetComponent<Text>();
-      t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      t.font = KutDesignTokens.UiFont;
       t.fontSize = size;
       t.color = KutDesignTokens.TextPrimary;
       t.alignment = TextAnchor.UpperLeft;

@@ -36,6 +36,12 @@
     { "id": "relic_wind_feather", "category": "Relics", "kind": "relic" },
     { "id": "relic_ch2_finale", "category": "Relics", "kind": "relic" },
     { "id": "ui_board_tray", "category": "UI", "kind": "ui", "aspect": "3:4" },
-    { "id": "ui_panel_frame", "category": "UI", "kind": "ui", "aspect": "1:1" }
+    { "id": "ui_panel_frame", "category": "UI", "kind": "ui", "aspect": "1:1" },
+    { "id": "ui_button_primary", "category": "UI", "kind": "ui" },
+    { "id": "ui_cell_recess", "category": "UI", "kind": "ui" },
+    { "id": "ui_glyph_wheel", "category": "UI", "kind": "ui" },
+    { "id": "map_bg_ch1", "category": "Map", "kind": "map" },
+    { "id": "map_bg_ch2", "category": "Map", "kind": "map" },
+    { "id": "map_mist_overlay", "category": "Map", "kind": "map" }
   ]
 }

@@ -72,6 +72,17 @@ namespace Kut.Unity.Design
 
     public static Sprite? TryPanelFrame() => Load("UI", "ui_panel_frame");
 
+    public static Sprite? TryPrimaryButton() => Load("UI", "ui_button_primary");
+
+    public static Sprite? TryCellRecess() => Load("UI", "ui_cell_recess");
+
+    public static Sprite? TryGlyphWheel() => Load("UI", "ui_glyph_wheel");
+
+    public static Sprite? TryMapBackground(int chapter) =>
+      Load("Map", chapter <= 1 ? "map_bg_ch1" : "map_bg_ch2");
+
+    public static Sprite? TryMapMist() => Load("Map", "map_mist_overlay");
+
     private static Sprite? Load(string category, string spriteId)
     {
       var path = $"{Root}/{category}/{spriteId}";

@@ -16,6 +16,27 @@ namespace Kut.Unity.Design
 
     public static readonly Vector2 ReferenceResolution = new Vector2(1080, 1920);
 
+    private static Font? _uiFont;
+
+    public static Font UiFont
+    {
+      get
+      {
+        if (_uiFont != null)
+        {
+          return _uiFont;
+        }
+
+        _uiFont = Resources.Load<Font>("Fonts/NotoSans-Regular");
+        if (_uiFont == null)
+        {
+          _uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+
+        return _uiFont;
+      }
+    }
+
     public static Color AnimalAccent(string animalId) =>
       animalId switch
       {

@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using Kut.Core.Save;
 using Kut.Unity.Design;
 using UnityEngine;
@@ -135,7 +136,7 @@ namespace Kut.Unity.UI
       t.onValueChanged.AddListener(v => set(v));
       var txt = go.GetComponent<Text>();
       txt.text = "  " + label;
-      txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+      txt.font = KutDesignTokens.UiFont;
       txt.fontSize = 28;
       txt.color = KutDesignTokens.TextPrimary;
     }
@@ -162,6 +163,7 @@ namespace Kut.Unity.UI
       {
         titleT.text = title;
       }
+
       _body.text = body;
       var skip = _root.GetComponentInChildren<Button>();
       skip.onClick.RemoveAllListeners();
@@ -174,35 +176,101 @@ namespace Kut.Unity.UI
   public sealed class CeremonyOverlayUi : MonoBehaviour
   {
     private GameObject _root = null!;
-    private float _timer;
+    private RectTransform _wheel = null!;
+    private Text _lines = null!;
+    private CanvasGroup _group = null!;
 
     public void Build(Transform parent)
     {
       _root = KutUiFactory.BorderedPanel(parent, "Ceremony");
+      _group = _root.AddComponent<CanvasGroup>();
       KutUiFactory.Title(_root.transform, "Ruh töreni", 44);
-      KutUiFactory.Body(_root.transform, "Glyphs", new Vector2(0.1f, 0.35f), new Vector2(0.9f, 0.65f)).text =
-        "Kut işaretleri dönüyor…";
+      var wheelImg = KutUiFactory.SpriteSlot(_root.transform, "Wheel", new Vector2(0.22f, 0.38f), new Vector2(0.78f, 0.72f));
+      _wheel = wheelImg.rectTransform;
+      var sprite = KutArtCatalog.TryGlyphWheel();
+      if (sprite != null)
+      {
+        wheelImg.sprite = sprite;
+        wheelImg.color = Color.white;
+      }
+
+      _lines = KutUiFactory.Body(_root.transform, "Lines", new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.34f), 28);
+      _lines.alignment = TextAnchor.MiddleCenter;
       _root.SetActive(false);
     }
 
-    public void Play(Action onDone)
+    public void Play(SaveData save, Action onDone)
     {
-      _timer = 0f;
       _root.SetActive(true);
-      StartCoroutine(Run(onDone));
+      StartCoroutine(Run(save.ReducedMotion, onDone));
     }
 
-    private System.Collections.IEnumerator Run(Action onDone)
+    private System.Collections.IEnumerator Run(bool reducedMotion, Action onDone)
     {
-      while (_timer < 2.5f)
+      var json = Resources.Load<TextAsset>("Content/Config/ceremony_strings");
+      var lines = new[] { "Kut işaretleri dönüyor…" };
+      if (json != null)
       {
-        _timer += Time.deltaTime;
-        _root.transform.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(_timer * 3f) * 8f);
+        try
+        {
+          using var doc = JsonDocument.Parse(json.text);
+          if (doc.RootElement.TryGetProperty("linesTr", out var arr))
+          {
+            var list = new System.Collections.Generic.List<string>();
+            foreach (var el in arr.EnumerateArray())
+            {
+              list.Add(el.GetString() ?? "");
+            }
+
+            if (list.Count > 0)
+            {
+              lines = list.ToArray();
+            }
+          }
+        }
+        catch
+        {
+          // fallback lines
+        }
+      }
+
+      var duration = reducedMotion ? 0.4f : 2.5f;
+      var t = 0f;
+      var lineIdx = 0;
+      while (t < duration)
+      {
+        t += Time.deltaTime;
+        if (!reducedMotion)
+        {
+          var k = t / duration;
+          _wheel.localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(0, 360f, k * k));
+        }
+
+        var nextLine = Mathf.FloorToInt(t / (duration / lines.Length));
+        if (nextLine != lineIdx && nextLine < lines.Length)
+        {
+          lineIdx = nextLine;
+          _lines.text = lines[lineIdx];
+        }
+
         yield return null;
       }
 
+      _lines.text = lines[^1];
+      yield return FadeOut();
       _root.SetActive(false);
       onDone();
+    }
+
+    private System.Collections.IEnumerator FadeOut()
+    {
+      var t = 0f;
+      while (t < 0.35f)
+      {
+        t += Time.deltaTime;
+        _group.alpha = 1f - t / 0.35f;
+        yield return null;
+      }
     }
   }
 }
