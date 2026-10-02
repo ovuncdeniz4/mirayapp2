@@ -56,6 +56,7 @@ namespace Kut.Unity.UI
       rt.offsetMax = Vector2.zero;
       var img = go.GetComponent<Image>();
       img.color = KutDesignTokens.BackgroundDeep;
+      go.AddComponent<SafeAreaPanel>();
       if (heightFraction < 1f)
       {
         rt.anchorMin = new Vector2(0, 1f - heightFraction);

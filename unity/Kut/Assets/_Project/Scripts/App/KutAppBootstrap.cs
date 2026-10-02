@@ -15,6 +15,7 @@ using Kut.Unity.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 namespace Kut.Unity.App
 {
@@ -27,6 +28,7 @@ namespace Kut.Unity.App
     private SaveData _save = null!;
     private string _savePath = "";
 
+    private GameObject _languagePanel = null!;
     private GameObject _onboardingPanel = null!;
     private GameObject _onboardingRevealPanel = null!;
     private GameObject _homePanel = null!;
@@ -72,10 +74,27 @@ namespace Kut.Unity.App
       KutRuntimeSceneSetup.EnsureCameraAndAudioListener();
 
       _savePath = UnitySavePaths.SaveFilePath;
-      _content = UnityContentLoader.LoadBundle();
       _save = SaveStore.Load(_savePath);
-
       var canvas = KutUiFactory.CreateRootCanvas("KUT_UI");
+      KutLocalization.SetLanguage(string.IsNullOrEmpty(_save.Language)
+        ? KutLocalization.SystemDefault()
+        : _save.Language);
+      try
+      {
+        _content = UnityContentLoader.LoadBundle();
+      }
+      catch (Exception ex)
+      {
+        Debug.LogException(ex);
+        var error = KutUiFactory.BorderedPanel(canvas.transform, "ContentError");
+        KutUiFactory.Title(error.transform, KutLocalization.T("app.title"), 48);
+        var body = KutUiFactory.Body(error.transform, "Message", new Vector2(0.08f, 0.35f), new Vector2(0.92f, 0.65f), 30);
+        body.text = KutLocalization.T("content_error") + "\n\n" + ex.Message;
+        body.alignment = TextAnchor.MiddleCenter;
+        return;
+      }
+
+      BuildLanguage(canvas.transform);
       BuildOnboarding(canvas.transform);
       BuildOnboardingReveal(canvas.transform);
       BuildHome(canvas.transform);
@@ -95,7 +114,7 @@ namespace Kut.Unity.App
       _confirm = canvas.gameObject.AddComponent<ConfirmDialogUi>();
       _confirm.Build(canvas.transform);
       _settings = canvas.gameObject.AddComponent<SettingsPanelUi>();
-      _settings.Build(canvas.transform, _save, ApplySettings, BackHome, ResetSave);
+      _settings.Build(canvas.transform, _save, PersistSettings, BackHome, ResetSave, SelectLanguage);
       _tutorial = canvas.gameObject.AddComponent<TutorialOverlayUi>();
       _tutorial.Build(canvas.transform);
       _ceremony = canvas.gameObject.AddComponent<CeremonyOverlayUi>();
@@ -131,21 +150,31 @@ namespace Kut.Unity.App
       _haptics.Enabled = _save.HapticsEnabled;
     }
 
+    private void PersistSettings()
+    {
+      ApplySettings();
+      SaveStore.Save(_savePath, _save);
+    }
+
     private void ResetSave()
     {
       _confirm?.Show("Tüm ilerleme silinecek. Emin misin?", () =>
       {
         _save = new SaveData();
         SaveStore.Save(_savePath, _save);
-        ApplySettings();
-        HideAll();
-        _onboardingPanel.SetActive(true);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
       }, () => { });
     }
 
     private void ShowInitial()
     {
       HideAll();
+      if (string.IsNullOrEmpty(_save.Language))
+      {
+        _languagePanel.SetActive(true);
+        return;
+      }
+
       if (!_save.OnboardingComplete)
       {
         _onboardingPanel.SetActive(true);
@@ -158,6 +187,7 @@ namespace Kut.Unity.App
 
     private void HideAll()
     {
+      _languagePanel.SetActive(false);
       _onboardingPanel.SetActive(false);
       _onboardingRevealPanel.SetActive(false);
       _homePanel.SetActive(false);
@@ -169,20 +199,40 @@ namespace Kut.Unity.App
       _resultOverlay?.Hide();
     }
 
+    private void BuildLanguage(Transform root)
+    {
+      _languagePanel = KutUiFactory.BorderedPanel(root, "S00_Language");
+      KutUiFactory.Title(_languagePanel.transform, "Dil / Language", 52);
+      var info = KutUiFactory.Body(_languagePanel.transform, "Info", new Vector2(0.1f, 0.58f), new Vector2(0.9f, 0.7f), 30);
+      info.text = "Oyun dilini seç / Choose your language";
+      info.alignment = TextAnchor.MiddleCenter;
+      KutUiFactory.PrimaryButton(_languagePanel.transform, "Türkçe", new Vector2(0.15f, 0.38f), new Vector2(0.85f, 0.48f))
+        .onClick.AddListener(() => SelectLanguage("tr"));
+      KutUiFactory.PrimaryButton(_languagePanel.transform, "English", new Vector2(0.15f, 0.25f), new Vector2(0.85f, 0.35f))
+        .onClick.AddListener(() => SelectLanguage("en"));
+    }
+
+    private void SelectLanguage(string language)
+    {
+      _save.Language = language;
+      SaveStore.Save(_savePath, _save);
+      SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     private void BuildOnboarding(Transform root)
     {
       _onboardingPanel = KutUiFactory.BorderedPanel(root, "S01_Onboarding");
-      KutUiFactory.Title(_onboardingPanel.transform, "KUT — Ruh Töreni");
+      KutUiFactory.Title(_onboardingPanel.transform, KutLocalization.T("onboarding.title"));
       KutUiFactory.Body(_onboardingPanel.transform, "Disclaimer",
         new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.8f), 24).text =
-        "Kurgusal oyun sistemi — tarihsel şaman geleneği değildir.";
+        KutLocalization.T("onboarding.disclaimer");
       KutUiFactory.Body(_onboardingPanel.transform, "MonthLabel",
-        new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.64f)).text = "Doğum ayın (1-12)";
+        new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.64f)).text = KutLocalization.T("onboarding.month");
       _monthInput = CreateInput(_onboardingPanel.transform, new Vector2(0.08f, 0.5f), new Vector2(0.92f, 0.56f));
       KutUiFactory.Body(_onboardingPanel.transform, "DayLabel",
-        new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f)).text = "Doğum günün (1-31)";
+        new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f)).text = KutLocalization.T("onboarding.day");
       _dayInput = CreateInput(_onboardingPanel.transform, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.4f));
-      KutUiFactory.PrimaryButton(_onboardingPanel.transform, "Ruhumu bul",
+      KutUiFactory.PrimaryButton(_onboardingPanel.transform, KutLocalization.T("onboarding.find"),
         new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f)).onClick.AddListener(OnOnboardingSubmit);
     }
 
@@ -320,14 +370,10 @@ namespace Kut.Unity.App
     {
       _ = int.TryParse(_monthInput?.text, out var month);
       _ = int.TryParse(_dayInput?.text, out var day);
-      if (month < 1)
+      if (month < 1 || month > 12 || day < 1 || day > DateTime.DaysInMonth(2024, month))
       {
-        month = 1;
-      }
-
-      if (day < 1)
-      {
-        day = 1;
+        ShowToast(KutLocalization.T("onboarding.invalid_date"));
+        return;
       }
 
       HideAll();
@@ -395,8 +441,18 @@ namespace Kut.Unity.App
 
     private void StartLevel(string levelId)
     {
-      var json = UnityContentLoader.LoadLevelJson(levelId);
-      var def = LevelLoader.Parse(json);
+      LevelDefinition def;
+      try
+      {
+        var json = UnityContentLoader.LoadLevelJson(levelId);
+        def = LevelLoader.Parse(json);
+      }
+      catch (Exception ex)
+      {
+        Debug.LogException(ex);
+        ShowToast(KutLocalization.T("content_error"));
+        return;
+      }
       _levelSession = GameShell.CreateLevelSession(_save, def);
       _activeLevelId = levelId;
 
@@ -477,7 +533,8 @@ namespace Kut.Unity.App
 
       if (_levelSession.Outcome == LevelOutcome.Victory)
       {
-        GameShell.ApplyVictory(_save, _content, _activeLevelId);
+        var stars = _levelSession.Definition.StarsForMovesRemaining(_levelSession.Engine.MovesRemaining);
+        GameShell.ApplyVictory(_save, _content, _activeLevelId, stars, _levelSession.Engine.MovesRemaining);
         SaveStore.Save(_savePath, _save);
         DebugAnalytics.LogEvent("level_completed", _activeLevelId);
         _audio?.PlayVictory();
@@ -777,6 +834,9 @@ namespace Kut.Unity.App
 
       var input = go.GetComponent<InputField>();
       input.textComponent = text;
+      input.contentType = InputField.ContentType.IntegerNumber;
+      input.keyboardType = TouchScreenKeyboardType.NumberPad;
+      input.characterLimit = 2;
       return input;
     }
   }

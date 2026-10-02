@@ -26,8 +26,8 @@ GitHub Desktop is **not** required — only the cloned repo folder.
 
 2. Hub → **Add** → select folder **`unity/Kut`** (open with **2022.3 LTS**).
 3. First open may take several minutes (import art + scripts). Open the project with **`2022.3.62f1`** (not Extended LTS builds).
-4. Menu **KUT → Create Main Scene And Open** (creates `Assets/_Project/Scenes/Main.unity` with **`KutAppBootstrap`**).
-5. **Play**
+4. Open the committed **`Assets/_Project/Scenes/Main.unity`** scene.
+5. **Play**. Use **KUT → Create Main Scene And Open** only if the scene needs to be repaired.
 
 UI is built at runtime per [`ux-ui-spec.md`](ux-ui-spec.md). Sprites: [`ART_DIRECTION.md`](ART_DIRECTION.md).
 

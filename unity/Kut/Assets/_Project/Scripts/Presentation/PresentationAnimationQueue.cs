@@ -58,8 +58,8 @@ namespace Kut.Unity.Presentation
           case SwapRevertedEvent:
             yield return _board.AnimateSwapRevert(reduced ? 0f : 0.16f);
             break;
-          case MatchFoundEvent:
-            _audio?.PlayMatch(Element.Earth);
+          case MatchFoundEvent match:
+            _audio?.PlayMatch(match.Element);
             _haptics?.Light();
             if (!reduced)
             {
@@ -101,10 +101,7 @@ namespace Kut.Unity.Presentation
               {
                 yield return _vfx.PlayDrumPulse(sa.At, new Color(0.3f, 0.67f, 0.42f, 0.8f), 0.35f);
               }
-              else if (sa.Special == SpecialType.FireBomb)
-              {
-                yield return _vfx.PlayBombRings(sa.At, 0.3f);
-              }
+              // Fire Bomb rings are driven by AreaClearEvent to avoid playing twice.
             }
             else if (!reduced)
             {
@@ -159,6 +156,9 @@ namespace Kut.Unity.Presentation
               yield return new WaitForSeconds(0.06f);
             }
 
+            break;
+          case BoardReshuffledEvent:
+            yield return _board.AnimateReshuffle(reduced ? 0f : 0.4f);
             break;
         }
       }

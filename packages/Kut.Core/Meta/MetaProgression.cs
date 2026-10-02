@@ -10,9 +10,19 @@ namespace Kut.Core.Meta
       SaveData save,
       ChapterCatalog chapters,
       CollectionCatalog collection,
-      string levelId)
+      string levelId,
+      int stars = 1,
+      int movesRemaining = 0)
     {
-      save.Levels[levelId] = new LevelSaveEntry { Completed = true };
+      if (!save.Levels.TryGetValue(levelId, out var entry))
+      {
+        entry = new LevelSaveEntry();
+        save.Levels[levelId] = entry;
+      }
+
+      entry.Completed = true;
+      entry.BestStars = System.Math.Max(entry.BestStars, System.Math.Clamp(stars, 1, 3));
+      entry.BestMovesRemaining = System.Math.Max(entry.BestMovesRemaining, movesRemaining);
 
       var globalIndex = chapters.IndexOfLevel(levelId);
       if (globalIndex >= 0 && save.HighestUnlockedLevel < globalIndex + 2)

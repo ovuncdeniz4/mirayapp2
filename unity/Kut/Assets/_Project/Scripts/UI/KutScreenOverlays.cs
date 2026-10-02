@@ -85,7 +85,7 @@ namespace Kut.Unity.UI
     private SaveData _save = null!;
     private Action _onChanged = null!;
 
-    public void Build(Transform parent, SaveData save, Action onChanged, Action onClose, Action onReset)
+    public void Build(Transform parent, SaveData save, Action onChanged, Action onClose, Action onReset, Action<string> onLanguage)
     {
       _save = save;
       _onChanged = onChanged;
@@ -95,6 +95,10 @@ namespace Kut.Unity.UI
       AddSlider("Ses efektleri", 0.58f, v => { _save.SfxVolume = v; _onChanged(); }, _save.SfxVolume);
       AddToggle("Titreşim", 0.46f, _save.HapticsEnabled, v => { _save.HapticsEnabled = v; _onChanged(); });
       AddToggle("Azaltılmış hareket", 0.36f, _save.ReducedMotion, v => { _save.ReducedMotion = v; _onChanged(); });
+      KutUiFactory.PrimaryButton(_root.transform, "Türkçe", new Vector2(0.1f, 0.25f), new Vector2(0.46f, 0.33f))
+        .onClick.AddListener(() => onLanguage("tr"));
+      KutUiFactory.PrimaryButton(_root.transform, "English", new Vector2(0.54f, 0.25f), new Vector2(0.9f, 0.33f))
+        .onClick.AddListener(() => onLanguage("en"));
       KutUiFactory.PrimaryButton(_root.transform, "Kaydı sıfırla", new Vector2(0.12f, 0.14f), new Vector2(0.88f, 0.22f))
         .onClick.AddListener(() => onReset());
       KutUiFactory.PrimaryButton(_root.transform, "Geri", new Vector2(0.2f, 0.04f), new Vector2(0.8f, 0.12f))
@@ -114,7 +118,44 @@ namespace Kut.Unity.UI
       rt.anchorMax = new Vector2(0.9f, y - 0.02f);
       rt.offsetMin = Vector2.zero;
       rt.offsetMax = Vector2.zero;
+
+      var background = new GameObject("Background", typeof(RectTransform), typeof(Image));
+      background.transform.SetParent(go.transform, false);
+      var bgRt = background.GetComponent<RectTransform>();
+      bgRt.anchorMin = new Vector2(0, 0.35f);
+      bgRt.anchorMax = new Vector2(1, 0.65f);
+      bgRt.offsetMin = Vector2.zero;
+      bgRt.offsetMax = Vector2.zero;
+      background.GetComponent<Image>().color = KutDesignTokens.TextMuted;
+
+      var fillArea = new GameObject("Fill Area", typeof(RectTransform));
+      fillArea.transform.SetParent(go.transform, false);
+      var fillAreaRt = fillArea.GetComponent<RectTransform>();
+      fillAreaRt.anchorMin = new Vector2(0, 0.25f);
+      fillAreaRt.anchorMax = new Vector2(1, 0.75f);
+      fillAreaRt.offsetMin = new Vector2(10, 0);
+      fillAreaRt.offsetMax = new Vector2(-10, 0);
+      var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+      fill.transform.SetParent(fillArea.transform, false);
+      fill.GetComponent<Image>().color = KutDesignTokens.AccentGold;
+
+      var handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
+      handleArea.transform.SetParent(go.transform, false);
+      var handleAreaRt = handleArea.GetComponent<RectTransform>();
+      handleAreaRt.anchorMin = Vector2.zero;
+      handleAreaRt.anchorMax = Vector2.one;
+      handleAreaRt.offsetMin = new Vector2(18, 0);
+      handleAreaRt.offsetMax = new Vector2(-18, 0);
+      var handle = new GameObject("Handle", typeof(RectTransform), typeof(Image));
+      handle.transform.SetParent(handleArea.transform, false);
+      var handleRt = handle.GetComponent<RectTransform>();
+      handleRt.sizeDelta = new Vector2(38, 38);
+      handle.GetComponent<Image>().color = KutDesignTokens.TextPrimary;
+
       var s = go.GetComponent<Slider>();
+      s.fillRect = fill.GetComponent<RectTransform>();
+      s.handleRect = handleRt;
+      s.targetGraphic = handle.GetComponent<Image>();
       s.minValue = 0f;
       s.maxValue = 1f;
       s.value = value;
@@ -123,7 +164,7 @@ namespace Kut.Unity.UI
 
     private void AddToggle(string label, float y, bool value, Action<bool> set)
     {
-      var go = new GameObject(label, typeof(RectTransform), typeof(Toggle), typeof(Text));
+      var go = new GameObject(label, typeof(RectTransform), typeof(Toggle));
       go.transform.SetParent(_root.transform, false);
       var rt = go.GetComponent<RectTransform>();
       rt.anchorMin = new Vector2(0.08f, y - 0.04f);
@@ -131,10 +172,39 @@ namespace Kut.Unity.UI
       rt.offsetMin = Vector2.zero;
       rt.offsetMax = Vector2.zero;
       var t = go.GetComponent<Toggle>();
+
+      var box = new GameObject("Background", typeof(RectTransform), typeof(Image));
+      box.transform.SetParent(go.transform, false);
+      var boxRt = box.GetComponent<RectTransform>();
+      boxRt.anchorMin = new Vector2(0, 0.15f);
+      boxRt.anchorMax = new Vector2(0, 0.85f);
+      boxRt.pivot = new Vector2(0, 0.5f);
+      boxRt.sizeDelta = new Vector2(48, 0);
+      var boxImage = box.GetComponent<Image>();
+      boxImage.color = KutDesignTokens.PanelSurface;
+
+      var check = new GameObject("Checkmark", typeof(RectTransform), typeof(Image));
+      check.transform.SetParent(box.transform, false);
+      var checkRt = check.GetComponent<RectTransform>();
+      checkRt.anchorMin = new Vector2(0.2f, 0.2f);
+      checkRt.anchorMax = new Vector2(0.8f, 0.8f);
+      checkRt.offsetMin = Vector2.zero;
+      checkRt.offsetMax = Vector2.zero;
+      check.GetComponent<Image>().color = KutDesignTokens.AccentGold;
+
+      var textGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+      textGo.transform.SetParent(go.transform, false);
+      var textRt = textGo.GetComponent<RectTransform>();
+      textRt.anchorMin = new Vector2(0.09f, 0);
+      textRt.anchorMax = Vector2.one;
+      textRt.offsetMin = Vector2.zero;
+      textRt.offsetMax = Vector2.zero;
       t.isOn = value;
       t.onValueChanged.AddListener(v => set(v));
-      var txt = go.GetComponent<Text>();
-      txt.text = "  " + label;
+      t.targetGraphic = boxImage;
+      t.graphic = check.GetComponent<Image>();
+      var txt = textGo.GetComponent<Text>();
+      txt.text = label;
       txt.font = KutDesignTokens.UiFont;
       txt.fontSize = 28;
       txt.color = KutDesignTokens.TextPrimary;

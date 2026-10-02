@@ -30,7 +30,7 @@ Legend: `E` earth, `W` water, `F` fire, `A` wind, `M` mud, `V` vine, `C` chime, 
 ./tools/sync-core-to-unity.sh
 ```
 
-4. In Unity: **KUT → Create Main Scene And Open** → **Play** ([`docs/unity-setup.md`](docs/unity-setup.md)).
+4. Open **`Assets/_Project/Scenes/Main.unity`** and press **Play**. The **KUT → Create Main Scene And Open** menu remains available as a repair utility ([`docs/unity-setup.md`](docs/unity-setup.md)).
 
 Screens S-01…S-07 match CLI `--slice` per [`docs/ux-ui-spec.md`](docs/ux-ui-spec.md).
 
