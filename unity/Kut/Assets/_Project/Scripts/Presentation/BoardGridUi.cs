@@ -17,6 +17,10 @@ namespace Kut.Unity.Presentation
     private sealed class CellSlot
     {
       public GridPos Pos;
+      // Kept for compatibility with scenes/scripts produced by the earlier
+      // button-based board builder. The current board uses EventTrigger, but
+      // retaining this reference prevents mixed Unity imports from failing.
+      public Button? Button;
       public Image TileImage = null!;
       public RectTransform Rect = null!;
       public Outline Outline = null!;
