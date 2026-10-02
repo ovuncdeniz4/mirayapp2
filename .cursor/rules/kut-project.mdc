@@ -7,7 +7,7 @@ globs:
   - unity/Kut/**
 ---
 
-# KUT project rules
+# KUT project rulesasd
 
 - Read `docs/architecture.md` before new gameplay features; UX/UI changes must follow `docs/ux-ui-spec.md` and `docs/visual-design-system.md`.
 - **Never** mutate `BoardEngine` / `BoardState` from Unity `BoardView` or UI — commands + events only.
