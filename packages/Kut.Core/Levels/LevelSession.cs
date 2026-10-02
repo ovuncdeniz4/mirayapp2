@@ -28,6 +28,17 @@ namespace Kut.Core.Levels
 
     public CommandResult Submit(IGameCommand command)
     {
+      if (Outcome != LevelOutcome.InProgress)
+      {
+        return new CommandResult { Status = CommandStatus.RejectedSessionComplete };
+      }
+
+      if (Engine.MovesRemaining <= 0)
+      {
+        EvaluateOutcome();
+        return new CommandResult { Status = CommandStatus.RejectedNoMoves };
+      }
+
       Objectives.BeginTurn();
       var result = Engine.Apply(command);
       Objectives.ApplyEvents(result.Events);

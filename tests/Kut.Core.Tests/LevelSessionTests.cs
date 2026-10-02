@@ -18,8 +18,8 @@ namespace Kut.Core.Tests
       while (session.Outcome == LevelOutcome.InProgress && attempts < 40)
       {
         attempts++;
-        session.Submit(new SwapCommand(new GridPos(0, 0), new GridPos(1, 0)));
-        session.Submit(new SwapCommand(new GridPos(2, 0), new GridPos(3, 0)));
+        Assert.That(BoardLegalMoves.TryFindLegalSwap(session.Engine.State, out var from, out var to), Is.True);
+        session.Submit(new SwapCommand(from, to));
       }
 
       Assert.That(session.Objectives.GetProgress(0), Is.GreaterThan(0));

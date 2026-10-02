@@ -53,10 +53,10 @@ namespace Kut.Core.Tests
       board.SetCell(new GridPos(7, 2), Cell.FromTile(TileRegistry.Create("earth_moss")));
 
       var engine = new BoardEngine(board, new Kut.Core.Levels.LevelRules { Moves = 5, Seed = 1 });
-      engine.Apply(new ActivateSpecialCommand(new GridPos(3, 2)));
+      var result = engine.Apply(new ActivateSpecialCommand(new GridPos(3, 2)));
 
-      Assert.That(board.GetCell(new GridPos(0, 2)).Kind, Is.EqualTo(CellKind.Empty));
-      Assert.That(board.GetCell(new GridPos(7, 2)).Kind, Is.EqualTo(CellKind.Empty));
+      Assert.That(result.Events.OfType<TilesClearedEvent>().Any(e => e.Cells.Contains(new GridPos(0, 2))), Is.True);
+      Assert.That(result.Events.OfType<TilesClearedEvent>().Any(e => e.Cells.Contains(new GridPos(7, 2))), Is.True);
     }
   }
 }

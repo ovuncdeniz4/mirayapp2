@@ -30,7 +30,8 @@ namespace Kut.Core.Board
       for (var attempt = 0; attempt < maxAttempts; attempt++)
       {
         FillEmptyTiles(board, rng, spawnTable);
-        if (MatchDetection.FindMatchedCells(board).Count == 0 && CountTiles(board) > 0)
+        if (MatchDetection.FindMatchedCells(board).Count == 0 && CountTiles(board) > 0 &&
+            BoardLegalMoves.HasLegalMove(board))
         {
           return;
         }
@@ -39,6 +40,10 @@ namespace Kut.Core.Board
       }
 
       FillEmptyTiles(board, rng, spawnTable);
+      if (MatchDetection.FindMatchedCells(board).Count > 0 || !BoardLegalMoves.HasLegalMove(board))
+      {
+        throw new System.InvalidOperationException("Unable to generate a stable board with at least one legal move.");
+      }
     }
 
     private static int CountTiles(BoardState board)
@@ -67,11 +72,44 @@ namespace Kut.Core.Board
           var pos = new GridPos(x, y);
           if (board.GetCell(pos).Kind == CellKind.Empty)
           {
-            var tileId = spawnTable[rng.NextInt(spawnTable.Count)];
-            board.SetCell(pos, Cell.FromTile(TileRegistry.Create(tileId)));
+            var offset = rng.NextInt(spawnTable.Count);
+            var placed = false;
+            for (var candidate = 0; candidate < spawnTable.Count; candidate++)
+            {
+              var tileId = spawnTable[(offset + candidate) % spawnTable.Count];
+              if (WouldCreateImmediateMatch(board, pos, tileId))
+              {
+                continue;
+              }
+
+              board.SetCell(pos, Cell.FromTile(TileRegistry.Create(tileId)));
+              placed = true;
+              break;
+            }
+
+            if (!placed)
+            {
+              var tileId = spawnTable[offset];
+              board.SetCell(pos, Cell.FromTile(TileRegistry.Create(tileId)));
+            }
           }
         }
       }
+    }
+
+    private static bool WouldCreateImmediateMatch(BoardState board, GridPos pos, string tileId)
+    {
+      var group = TileRegistry.Create(tileId).MatchGroup;
+      if (pos.X >= 2 &&
+          board.GetMatchGroup(pos.Offset(-1, 0)) == group &&
+          board.GetMatchGroup(pos.Offset(-2, 0)) == group)
+      {
+        return true;
+      }
+
+      return pos.Y >= 2 &&
+             board.GetMatchGroup(pos.Offset(0, -1)) == group &&
+             board.GetMatchGroup(pos.Offset(0, -2)) == group;
     }
 
     private static void ClearTilesOnly(BoardState board)

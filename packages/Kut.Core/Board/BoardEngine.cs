@@ -51,27 +51,33 @@ namespace Kut.Core.Board
     public CommandResult Apply(IGameCommand command)
     {
       var events = new List<GameEvent>();
+      CommandStatus status;
       switch (command)
       {
         case SwapCommand swap:
-          ApplySwap(swap, events);
+          status = ApplySwap(swap, events);
           break;
         case ActivateSpecialCommand activate:
-          ApplyActivateSpecial(activate, events);
+          status = ApplyActivateSpecial(activate, events);
           break;
         default:
-          return new CommandResult { Success = false, Events = events };
+          return new CommandResult { Status = CommandStatus.RejectedInvalidTarget, Events = events };
       }
 
-      return new CommandResult { Success = true, Events = events };
+      return new CommandResult { Status = status, Events = events };
     }
 
-    private void ApplySwap(SwapCommand swap, List<GameEvent> events)
+    private CommandStatus ApplySwap(SwapCommand swap, List<GameEvent> events)
     {
       events.Add(new SwapAttemptedEvent(swap.From, swap.To));
+      if (!State.Size.Contains(swap.From) || !State.Size.Contains(swap.To))
+      {
+        return CommandStatus.RejectedInvalidPosition;
+      }
+
       if (!State.CanSwap(swap.From, swap.To))
       {
-        return;
+        return CommandStatus.RejectedInvalidTarget;
       }
 
       State.SwapTiles(swap.From, swap.To);
@@ -82,21 +88,28 @@ namespace Kut.Core.Board
         State.SwapTiles(swap.From, swap.To);
         _lastSwapDestination = null;
         events.Add(new SwapRevertedEvent());
-        return;
+        return CommandStatus.Reverted;
       }
 
       MovesRemaining--;
       events.Add(new MoveConsumedEvent(MovesRemaining));
       ResolveUntilStable(events);
       _lastSwapDestination = null;
+      EnsurePlayableBoard(events);
+      return CommandStatus.Applied;
     }
 
-    private void ApplyActivateSpecial(ActivateSpecialCommand activate, List<GameEvent> events)
+    private CommandStatus ApplyActivateSpecial(ActivateSpecialCommand activate, List<GameEvent> events)
     {
+      if (!State.Size.Contains(activate.At))
+      {
+        return CommandStatus.RejectedInvalidPosition;
+      }
+
       var cell = State.GetCell(activate.At);
       if (cell.Kind != CellKind.Tile || cell.Tile == null)
       {
-        return;
+        return CommandStatus.RejectedInvalidTarget;
       }
 
       if (cell.Tile.Special == SpecialType.WindChime)
@@ -116,12 +129,32 @@ namespace Kut.Core.Board
       }
       else
       {
-        return;
+        return CommandStatus.RejectedInvalidTarget;
       }
 
       MovesRemaining--;
       events.Add(new MoveConsumedEvent(MovesRemaining));
+      GravitySystem.Apply(State, events);
+      RefillSystem.RefillColumns(State, _rng, _spawnTable, events);
       ResolveUntilStable(events);
+      EnsurePlayableBoard(events);
+      return CommandStatus.Applied;
+    }
+
+    private void EnsurePlayableBoard(List<GameEvent> events)
+    {
+      if (BoardLegalMoves.HasLegalMove(State))
+      {
+        return;
+      }
+
+      if (!BoardLegalMoves.TryReshuffle(State, _rng) &&
+          !BoardLegalMoves.TryRegenerate(State, _rng, _spawnTable))
+      {
+        throw new System.InvalidOperationException("Board has no legal move and could not be reshuffled.");
+      }
+
+      events.Add(new BoardReshuffledEvent());
     }
 
     public void AddBonusMoves(int amount)
@@ -145,7 +178,9 @@ namespace Kut.Core.Board
         }
 
         chain++;
-        events.Add(new MatchFoundEvent(matched.ToList()));
+        var matchElement = matched.Select(p => State.GetCell(p).Tile?.Element)
+          .FirstOrDefault(e => e.HasValue) ?? Element.Earth;
+        events.Add(new MatchFoundEvent(matched.ToList(), matchElement));
         ProcessMatchClear(matched, events);
         GravitySystem.Apply(State, events);
         RefillSystem.RefillColumns(State, _rng, _spawnTable, events);

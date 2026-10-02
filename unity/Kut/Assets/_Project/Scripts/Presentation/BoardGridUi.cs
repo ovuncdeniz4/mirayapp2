@@ -187,6 +187,34 @@ namespace Kut.Unity.Presentation
       StartCoroutine(ShakeCells(a, b, 0.16f));
     }
 
+    public IEnumerator AnimateReshuffle(float duration)
+    {
+      if (_gridRoot == null || duration <= 0f)
+      {
+        yield break;
+      }
+
+      var rt = (RectTransform)_gridRoot;
+      var half = duration * 0.5f;
+      var t = 0f;
+      while (t < half)
+      {
+        t += Time.deltaTime;
+        rt.localScale = Vector3.one * Mathf.Lerp(1f, 0.82f, Mathf.SmoothStep(0, 1, t / half));
+        yield return null;
+      }
+
+      t = 0f;
+      while (t < half)
+      {
+        t += Time.deltaTime;
+        rt.localScale = Vector3.one * Mathf.Lerp(0.82f, 1f, Mathf.SmoothStep(0, 1, t / half));
+        yield return null;
+      }
+
+      rt.localScale = Vector3.one;
+    }
+
     private IEnumerator FlashCell(Image img, float duration)
     {
       if (duration <= 0f)
@@ -279,7 +307,6 @@ namespace Kut.Unity.Presentation
       return new CellSlot
       {
         Pos = pos,
-        Button = null!,
         TileImage = img,
         Rect = go.GetComponent<RectTransform>(),
         Outline = outline

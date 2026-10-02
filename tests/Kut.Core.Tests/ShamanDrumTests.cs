@@ -48,9 +48,9 @@ namespace Kut.Core.Tests
       board.SetCell(new GridPos(3, 3), Cell.FromTile(TileRegistry.Create("water_drop")));
 
       var engine = new BoardEngine(board, new Kut.Core.Levels.LevelRules { Moves = 3, Seed = 1 });
-      engine.Apply(new ActivateSpecialCommand(new GridPos(1, 1)));
+      var result = engine.Apply(new ActivateSpecialCommand(new GridPos(1, 1)));
 
-      Assert.That(board.GetCell(new GridPos(0, 0)).Kind, Is.EqualTo(CellKind.Empty));
+      Assert.That(result.Events.OfType<TilesClearedEvent>().Any(e => e.Cells.Contains(new GridPos(0, 0))), Is.True);
       Assert.That(board.GetCell(new GridPos(3, 3)).Kind, Is.EqualTo(CellKind.Tile));
     }
   }

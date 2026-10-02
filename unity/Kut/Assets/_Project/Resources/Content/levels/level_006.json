@@ -4,6 +4,9 @@
   "boardSize": { "w": 8, "h": 8 },
   "moves": 24,
   "seed": 106,
+  "nameKey": "level.006.name",
+  "hintKey": "level.006.hint",
+  "starThresholds": { "two": 3, "three": 7 },
   "enableSpecialCreation": false,
   "stoneCells": [
     { "x": 0, "y": 7 },

@@ -39,9 +39,17 @@ namespace Kut.Core.App
 
     public static string ResolveContinueLevelId(SaveData save, GameContentBundle content)
     {
-      var total = content.Chapters.AllLevelIds.Count;
-      var index = Math.Min(save.HighestUnlockedLevel, total);
-      return content.Chapters.LevelIdAtGlobalIndex(index) ?? content.Chapters.AllLevelIds[0];
+      var levels = content.Chapters.AllLevelIds;
+      var accessible = Math.Min(save.HighestUnlockedLevel, levels.Count);
+      for (var i = 0; i < accessible; i++)
+      {
+        if (!save.Levels.TryGetValue(levels[i], out var entry) || !entry.Completed)
+        {
+          return levels[i];
+        }
+      }
+
+      return levels[Math.Max(0, accessible - 1)];
     }
 
     public static LevelSession CreateLevelSession(SaveData save, LevelDefinition def)
@@ -56,9 +64,9 @@ namespace Kut.Core.App
       return session;
     }
 
-    public static void ApplyVictory(SaveData save, GameContentBundle content, string levelId)
+    public static void ApplyVictory(SaveData save, GameContentBundle content, string levelId, int stars = 1, int movesRemaining = 0)
     {
-      MetaProgression.ApplyLevelVictory(save, content.Chapters, content.Collection, levelId);
+      MetaProgression.ApplyLevelVictory(save, content.Chapters, content.Collection, levelId, stars, movesRemaining);
     }
   }
 }

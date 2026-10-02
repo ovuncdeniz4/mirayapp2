@@ -43,13 +43,15 @@ namespace Kut.Core.GameEvents
 
   public sealed class MatchFoundEvent : GameEvent
   {
-    public MatchFoundEvent(IReadOnlyList<GridPos> cells)
+    public MatchFoundEvent(IReadOnlyList<GridPos> cells, Element element = Element.Earth)
     {
       EventType = "match_found";
       Cells = cells;
+      Element = element;
     }
 
     public IReadOnlyList<GridPos> Cells { get; }
+    public Element Element { get; }
   }
 
   public sealed class TilesClearedEvent : GameEvent
@@ -204,6 +206,14 @@ namespace Kut.Core.GameEvents
     }
 
     public int ChainIndex { get; }
+  }
+
+  public sealed class BoardReshuffledEvent : GameEvent
+  {
+    public BoardReshuffledEvent()
+    {
+      EventType = "board_reshuffled";
+    }
   }
 
   public sealed class CollectionItemUnlockedEvent : GameEvent

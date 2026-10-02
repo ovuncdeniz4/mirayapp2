@@ -105,7 +105,6 @@ namespace Kut.Unity.UI
         if (MetaProgression.CanAccessChapter(ch, save, content.Chapters))
         {
           chapterHint = ParseChapterIndex(ch.Id);
-          break;
         }
       }
 
@@ -145,7 +144,8 @@ namespace Kut.Unity.UI
             continue;
           }
 
-          AddLevelRow(done, idx, levelId, () => onLevel(levelId));
+          var stars = done && e != null ? e.BestStars : 0;
+          AddLevelRow(done, stars, idx, levelId, () => onLevel(levelId));
         }
       }
 
@@ -224,14 +224,15 @@ namespace Kut.Unity.UI
       t.text = $"  🔒 {idx,2}. {levelId}";
     }
 
-    private void AddLevelRow(bool done, int idx, string levelId, Action onClick)
+    private void AddLevelRow(bool done, int stars, int idx, string levelId, Action onClick)
     {
       var go = new GameObject(levelId, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
       go.transform.SetParent(_content, false);
       go.GetComponent<LayoutElement>().minHeight = 72;
       var img = go.GetComponent<Image>();
       img.color = done ? new Color(0.3f, 0.67f, 0.42f, 0.25f) : KutDesignTokens.AccentGold;
-      var label = $"{(done ? "✓" : "→")} {idx,2}. {levelId}";
+      var starLabel = stars > 0 ? "  " + new string('★', stars) + new string('☆', 3 - stars) : "";
+      var label = $"{(done ? "✓" : "→")} {idx,2}. {levelId}{starLabel}";
       var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
       textGo.transform.SetParent(go.transform, false);
       var txt = textGo.GetComponent<Text>();

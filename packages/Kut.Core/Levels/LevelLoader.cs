@@ -22,6 +22,10 @@ namespace Kut.Core.Levels
         Chapter = root.TryGetProperty("chapter", out var ch) ? ch.GetInt32() : 0,
         Moves = root.TryGetProperty("moves", out var moves) ? moves.GetInt32() : 20,
         Seed = root.TryGetProperty("seed", out var seed) ? seed.GetInt32() : 1,
+        NameKey = root.TryGetProperty("nameKey", out var nameKey) ? nameKey.GetString() ?? "" : "",
+        HintKey = root.TryGetProperty("hintKey", out var hintKey) ? hintKey.GetString() ?? "" : "",
+        TwoStarMoves = root.TryGetProperty("starThresholds", out var stars) && stars.TryGetProperty("two", out var two) ? two.GetInt32() : 3,
+        ThreeStarMoves = root.TryGetProperty("starThresholds", out stars) && stars.TryGetProperty("three", out var three) ? three.GetInt32() : 7,
         EnableWindChime = !root.TryGetProperty("enableWindChime", out var wc) || wc.GetBoolean(),
         EnableShamanDrum = root.TryGetProperty("enableShamanDrum", out var sd) && sd.GetBoolean(),
         EnableFireBomb = root.TryGetProperty("enableFireBomb", out var fb) && fb.GetBoolean()
@@ -103,8 +107,9 @@ namespace Kut.Core.Levels
         EnableSpecialCreation = def.EnableSpecialCreation
       };
 
-      var engine = new BoardEngine(state, rules, def.SpawnTable);
-      BoardGenerator.EnsureValidStart(state, new Random.DeterministicRandom(def.Seed), def.SpawnTable);
+      var spawnTable = def.SpawnTable.Count > 0 ? def.SpawnTable : new List<string>(TileRegistry.DefaultSpawnTable);
+      var engine = new BoardEngine(state, rules, spawnTable);
+      BoardGenerator.EnsureValidStart(state, new Random.DeterministicRandom(def.Seed), spawnTable);
       return engine;
     }
 

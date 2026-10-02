@@ -4,6 +4,9 @@
   "boardSize": { "w": 8, "h": 8 },
   "moves": 24,
   "seed": 105,
+  "nameKey": "level.005.name",
+  "hintKey": "level.005.hint",
+  "starThresholds": { "two": 3, "three": 7 },
   "enableWindChime": true,
   "enableSpecialCreation": true,
   "mudCells": [

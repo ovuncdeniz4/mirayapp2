@@ -52,6 +52,11 @@ namespace Kut.Core.Levels
         errors.Add($"{prefix}: moves must be >= 1");
       }
 
+      if (def.TwoStarMoves < 0 || def.ThreeStarMoves < def.TwoStarMoves || def.ThreeStarMoves > def.Moves)
+      {
+        errors.Add($"{prefix}: star thresholds must satisfy 0 <= two <= three <= moves");
+      }
+
       if (!string.IsNullOrEmpty(expectedIdStem) &&
           expectedIdStem.StartsWith("level_", StringComparison.Ordinal) &&
           def.Id != expectedIdStem)
@@ -159,6 +164,17 @@ namespace Kut.Core.Levels
           if (obj.Special != "wind_chime" && obj.Special != "shaman_drum" && obj.Special != "fire_bomb")
           {
             errors.Add($"{def.Id}: special objectives require wind_chime|shaman_drum|fire_bomb");
+          }
+
+          else if (!def.EnableSpecialCreation && obj.Type == ObjectiveType.CreateSpecial)
+          {
+            errors.Add($"{def.Id}: create_special requires enableSpecialCreation");
+          }
+          else if (obj.Special == "wind_chime" && !def.EnableWindChime ||
+                   obj.Special == "shaman_drum" && !def.EnableShamanDrum ||
+                   obj.Special == "fire_bomb" && !def.EnableFireBomb)
+          {
+            errors.Add($"{def.Id}: objective special '{obj.Special}' is not enabled");
           }
 
           break;

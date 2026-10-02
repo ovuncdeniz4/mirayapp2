@@ -10,7 +10,18 @@ namespace Kut.Core.Commands
 
   public sealed class CommandResult
   {
-    public bool Success { get; set; }
+    public CommandStatus Status { get; set; }
+    public bool Success => Status == CommandStatus.Applied;
     public IReadOnlyList<GameEvent> Events { get; set; } = new List<GameEvent>();
+  }
+
+  public enum CommandStatus
+  {
+    Applied,
+    Reverted,
+    RejectedInvalidPosition,
+    RejectedInvalidTarget,
+    RejectedSessionComplete,
+    RejectedNoMoves
   }
 }

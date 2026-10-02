@@ -2,6 +2,7 @@ using System.IO;
 using Kut.Core.App;
 using Kut.Core.Meta;
 using UnityEngine;
+using System;
 
 namespace Kut.Unity.App
 {
@@ -33,7 +34,12 @@ namespace Kut.Unity.App
     public static string LoadLevelJson(string levelId)
     {
       var asset = Resources.Load<TextAsset>($"{ResourcesPrefix}/levels/{levelId}");
-      return asset != null ? asset.text : "{}";
+      if (asset == null)
+      {
+        throw new InvalidOperationException($"Missing Resources/{ResourcesPrefix}/levels/{levelId}");
+      }
+
+      return asset.text;
     }
 
     private static void SyncLevels(string tempRoot)
@@ -50,8 +56,7 @@ namespace Kut.Unity.App
       var asset = Resources.Load<TextAsset>($"{ResourcesPrefix}/{pathWithoutExtension}");
       if (asset == null)
       {
-        Debug.LogError($"Missing Resources/{ResourcesPrefix}/{pathWithoutExtension}");
-        return "{}";
+        throw new InvalidOperationException($"Missing Resources/{ResourcesPrefix}/{pathWithoutExtension}");
       }
 
       return asset.text;

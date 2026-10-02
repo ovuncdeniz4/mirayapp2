@@ -11,6 +11,10 @@ namespace Kut.Core.Levels
     public int BoardHeight { get; set; } = 8;
     public int Moves { get; set; } = 20;
     public int Seed { get; set; } = 1;
+    public string NameKey { get; set; } = "";
+    public string HintKey { get; set; } = "";
+    public int TwoStarMoves { get; set; }
+    public int ThreeStarMoves { get; set; }
     public List<string> SpawnTable { get; set; } = new List<string>();
     public bool EnableWindChime { get; set; } = true;
     public bool EnableShamanDrum { get; set; } = false;
@@ -20,6 +24,16 @@ namespace Kut.Core.Levels
     public List<MudCellDefinition> VineCells { get; set; } = new List<MudCellDefinition>();
     public List<GridCellDefinition> StoneCells { get; set; } = new List<GridCellDefinition>();
     public List<ObjectiveDefinition> Objectives { get; set; } = new List<ObjectiveDefinition>();
+
+    public int StarsForMovesRemaining(int movesRemaining)
+    {
+      if (movesRemaining >= ThreeStarMoves)
+      {
+        return 3;
+      }
+
+      return movesRemaining >= TwoStarMoves ? 2 : 1;
+    }
   }
 
   public sealed class MudCellDefinition

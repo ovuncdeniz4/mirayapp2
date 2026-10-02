@@ -4,6 +4,9 @@
   "boardSize": { "w": 8, "h": 8 },
   "moves": 28,
   "seed": 207,
+  "nameKey": "level.017.name",
+  "hintKey": "level.017.hint",
+  "starThresholds": { "two": 3, "three": 7 },
   "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
   "vineCells": [{ "x": 2, "y": 4, "layers": 1 }, { "x": 5, "y": 4, "layers": 1 }],
   "objectives": [{ "type": "clear_obstacle", "target": 2, "obstacle": "vine" }]

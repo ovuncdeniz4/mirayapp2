@@ -4,7 +4,8 @@ namespace Kut.Core.Save
 {
   public sealed class SaveData
   {
-    public int SchemaVersion { get; set; } = 3;
+    public int SchemaVersion { get; set; } = 4;
+    public string Language { get; set; } = "";
     public bool OnboardingComplete { get; set; }
     public string AnimalId { get; set; } = "";
     public int AnimalAssignmentVersion { get; set; } = 1;
@@ -20,10 +21,13 @@ namespace Kut.Core.Save
     public bool HapticsEnabled { get; set; } = true;
     public bool ReducedMotion { get; set; }
     public List<string> CompletedTutorialIds { get; set; } = new List<string>();
+    public bool CompletionSummarySeen { get; set; }
   }
 
   public sealed class LevelSaveEntry
   {
     public bool Completed { get; set; }
+    public int BestStars { get; set; }
+    public int BestMovesRemaining { get; set; }
   }
 }

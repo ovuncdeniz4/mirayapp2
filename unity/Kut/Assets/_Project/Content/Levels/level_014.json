@@ -4,6 +4,9 @@
   "boardSize": { "w": 8, "h": 8 },
   "moves": 24,
   "seed": 204,
+  "nameKey": "level.014.name",
+  "hintKey": "level.014.hint",
+  "starThresholds": { "two": 3, "three": 7 },
   "spawnTable": ["earth_moss", "water_drop", "fire_ember", "wind_gust"],
   "enableSpecialCreation": false,
   "objectives": [{ "type": "collect_element", "target": 16, "element": "wind" }]
