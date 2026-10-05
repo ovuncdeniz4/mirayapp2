@@ -1,6 +1,6 @@
-# KUT — Beş Element
+# Ötüken Kut'u: Erlik'in Gazabı
 
-Deterministic **Kut.Core** Match-3 + Unity **2022.3 LTS** shell (macOS Monterey / older Macs). Unity **6.3 LTS** remains optional on **macOS 13+**.
+Deterministic **Kut.Core** Match-3 RPG Lite + Unity **2022.3 LTS** client. The scalable rebuild is developed on `codex/erlik-rebuild`; see [`docs/erlik-rebuild-status.md`](docs/erlik-rebuild-status.md) for verified progress and remaining production gates.
 
 ## Kut.Core (no Unity required)
 

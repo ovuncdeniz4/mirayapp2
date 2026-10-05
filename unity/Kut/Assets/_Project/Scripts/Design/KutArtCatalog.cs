@@ -83,6 +83,12 @@ namespace Kut.Unity.Design
 
     public static Sprite? TryMapMist() => Load("Map", "map_mist_overlay");
 
+    public static Sprite? TryGameplayBackground(int season) =>
+      Load("Backgrounds", $"season_{Mathf.Clamp(season, 1, 10):00}_gameplay_benchmark");
+
+    public static Sprite? TryZodiacSelectionBackground() =>
+      Load("Backgrounds", "zodiac_selection_benchmark");
+
     private static Sprite? Load(string category, string spriteId)
     {
       var path = $"{Root}/{category}/{spriteId}";

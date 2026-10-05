@@ -42,6 +42,8 @@
     { "id": "ui_glyph_wheel", "category": "UI", "kind": "ui" },
     { "id": "map_bg_ch1", "category": "Map", "kind": "map" },
     { "id": "map_bg_ch2", "category": "Map", "kind": "map" },
-    { "id": "map_mist_overlay", "category": "Map", "kind": "map" }
+    { "id": "map_mist_overlay", "category": "Map", "kind": "map" },
+    { "id": "season_01_gameplay_benchmark", "category": "Backgrounds", "kind": "gameplay_background", "season": 1 },
+    { "id": "zodiac_selection_benchmark", "category": "Backgrounds", "kind": "onboarding_background" }
   ]
 }

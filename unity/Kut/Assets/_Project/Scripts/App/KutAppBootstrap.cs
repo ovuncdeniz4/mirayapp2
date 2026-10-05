@@ -8,6 +8,7 @@ using Kut.Core.Levels;
 using Kut.Core.Meta;
 using Kut.Core.Objectives;
 using Kut.Core.Save;
+using Kut.Core.Zodiac;
 using Kut.Unity.Design;
 using Kut.Unity.Presentation;
 using Kut.Unity.Services;
@@ -42,8 +43,6 @@ namespace Kut.Unity.App
     private Image? _totemPortrait;
     private Image? _revealPortrait;
 
-    private InputField? _monthInput;
-    private InputField? _dayInput;
     private Text? _revealText;
     private Text? _homeBody;
     private Text? _levelHud;
@@ -175,7 +174,7 @@ namespace Kut.Unity.App
         return;
       }
 
-      if (!_save.OnboardingComplete)
+      if (!_save.OnboardingComplete || !_save.ZodiacSelectionComplete)
       {
         _onboardingPanel.SetActive(true);
         return;
@@ -222,24 +221,37 @@ namespace Kut.Unity.App
     private void BuildOnboarding(Transform root)
     {
       _onboardingPanel = KutUiFactory.BorderedPanel(root, "S01_Onboarding");
+      var zodiacBackground = KutArtCatalog.TryZodiacSelectionBackground();
+      var zodiacBackgroundImage = _onboardingPanel.GetComponent<Image>();
+      if (zodiacBackground != null && zodiacBackgroundImage != null)
+      {
+        zodiacBackgroundImage.sprite = zodiacBackground;
+        zodiacBackgroundImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
+        zodiacBackgroundImage.preserveAspect = false;
+      }
       KutUiFactory.Title(_onboardingPanel.transform, KutLocalization.T("onboarding.title"));
       KutUiFactory.Body(_onboardingPanel.transform, "Disclaimer",
-        new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.8f), 24).text =
+        new Vector2(0.08f, 0.82f), new Vector2(0.92f, 0.9f), 24).text =
         KutLocalization.T("onboarding.disclaimer");
-      KutUiFactory.Body(_onboardingPanel.transform, "MonthLabel",
-        new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.64f)).text = KutLocalization.T("onboarding.month");
-      _monthInput = CreateInput(_onboardingPanel.transform, new Vector2(0.08f, 0.5f), new Vector2(0.92f, 0.56f));
-      KutUiFactory.Body(_onboardingPanel.transform, "DayLabel",
-        new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f)).text = KutLocalization.T("onboarding.day");
-      _dayInput = CreateInput(_onboardingPanel.transform, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.4f));
-      KutUiFactory.PrimaryButton(_onboardingPanel.transform, KutLocalization.T("onboarding.find"),
-        new Vector2(0.15f, 0.12f), new Vector2(0.85f, 0.22f)).onClick.AddListener(OnOnboardingSubmit);
+      KutUiFactory.Body(_onboardingPanel.transform, "ChooseLabel",
+        new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.8f), 30).text = KutLocalization.T("onboarding.choose");
+      AddZodiacButton(ZodiacType.GokParsi, 0.60f, 0.69f);
+      AddZodiacButton(ZodiacType.AkSazan, 0.49f, 0.58f);
+      AddZodiacButton(ZodiacType.Bozkurt, 0.38f, 0.47f);
+      AddZodiacButton(ZodiacType.DemirKazik, 0.27f, 0.36f);
+      AddZodiacButton(ZodiacType.OksuzBuga, 0.16f, 0.25f);
+    }
+
+    private void AddZodiacButton(ZodiacType zodiac, float minY, float maxY)
+    {
+      KutUiFactory.PrimaryButton(_onboardingPanel.transform, ZodiacDisplayName(zodiac),
+        new Vector2(0.12f, minY), new Vector2(0.88f, maxY)).onClick.AddListener(() => SelectZodiac(zodiac));
     }
 
     private void BuildOnboardingReveal(Transform root)
     {
       _onboardingRevealPanel = KutUiFactory.BorderedPanel(root, "S01b_Reveal");
-      KutUiFactory.Title(_onboardingRevealPanel.transform, "Ruh hayvanın", 48);
+      KutUiFactory.Title(_onboardingRevealPanel.transform, "Takımyıldızın", 48);
       _revealPortrait = KutUiFactory.SpriteSlot(_onboardingRevealPanel.transform, "RevealPortrait",
         new Vector2(0.32f, 0.52f), new Vector2(0.68f, 0.78f));
       _revealText = KutUiFactory.Body(_onboardingRevealPanel.transform, "Reveal",
@@ -257,7 +269,7 @@ namespace Kut.Unity.App
     private void BuildHome(Transform root)
     {
       _homePanel = KutUiFactory.BorderedPanel(root, "S02_Home");
-      KutUiFactory.Title(_homePanel.transform, "KUT — Ana Ekran", 48);
+      KutUiFactory.Title(_homePanel.transform, KutLocalization.T("app.title"), 44);
       _homePortrait = KutUiFactory.SpriteSlot(_homePanel.transform, "HomeAnimal",
         new Vector2(0.62f, 0.52f), new Vector2(0.92f, 0.82f));
       _homeBody = KutUiFactory.Body(_homePanel.transform, "Body",
@@ -267,7 +279,7 @@ namespace Kut.Unity.App
         StartLevel(GameShell.ResolveContinueLevelId(_save, _content)));
       KutUiFactory.PrimaryButton(_homePanel.transform, "Harita",
         new Vector2(0.12f, 0.18f), new Vector2(0.45f, 0.26f)).onClick.AddListener(ShowMap);
-      KutUiFactory.PrimaryButton(_homePanel.transform, "Hayvan",
+      KutUiFactory.PrimaryButton(_homePanel.transform, "Takımyıldızı",
         new Vector2(0.55f, 0.18f), new Vector2(0.88f, 0.26f)).onClick.AddListener(ShowAnimal);
       _totemBtn = KutUiFactory.PrimaryButton(_homePanel.transform, "Totem 🔒",
         new Vector2(0.12f, 0.1f), new Vector2(0.45f, 0.16f));
@@ -288,6 +300,14 @@ namespace Kut.Unity.App
     private void BuildLevel(Transform root)
     {
       _levelPanel = KutUiFactory.BorderedPanel(root, "S04_Level");
+      var gameplayBackground = KutArtCatalog.TryGameplayBackground(1);
+      var levelBackgroundImage = _levelPanel.GetComponent<Image>();
+      if (gameplayBackground != null && levelBackgroundImage != null)
+      {
+        levelBackgroundImage.sprite = gameplayBackground;
+        levelBackgroundImage.color = Color.white;
+        levelBackgroundImage.preserveAspect = false;
+      }
       _levelHud = KutUiFactory.Body(_levelPanel.transform, "Hud",
         new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.96f), 34);
       _objectivesText = KutUiFactory.Body(_levelPanel.transform, "Objectives",
@@ -314,7 +334,7 @@ namespace Kut.Unity.App
     private void BuildAnimal(Transform root)
     {
       _animalPanel = KutUiFactory.Panel(root, "S05_Animal");
-      KutUiFactory.Title(_animalPanel.transform, "Hayvan", 48);
+      KutUiFactory.Title(_animalPanel.transform, "Takımyıldızı", 48);
       _animalPortrait = KutUiFactory.SpriteSlot(_animalPanel.transform, "AnimalPortrait",
         new Vector2(0.28f, 0.48f), new Vector2(0.72f, 0.82f));
       var body = KutUiFactory.Body(_animalPanel.transform, "Body",
@@ -366,24 +386,16 @@ namespace Kut.Unity.App
         new Vector2(0.2f, 0.08f), new Vector2(0.8f, 0.16f)).onClick.AddListener(BackHome);
     }
 
-    private void OnOnboardingSubmit()
+    private void SelectZodiac(ZodiacType zodiac)
     {
-      _ = int.TryParse(_monthInput?.text, out var month);
-      _ = int.TryParse(_dayInput?.text, out var day);
-      if (month < 1 || month > 12 || day < 1 || day > DateTime.DaysInMonth(2024, month))
-      {
-        ShowToast(KutLocalization.T("onboarding.invalid_date"));
-        return;
-      }
-
       HideAll();
       _ceremony!.Play(_save, () =>
       {
-        GameShell.CompleteOnboarding(_save, month, day);
+        GameShell.CompleteOnboarding(_save, zodiac);
         SaveStore.Save(_savePath, _save);
         DebugAnalytics.LogEvent("onboarding_completed");
-        DebugAnalytics.LogEvent("animal_assigned", _save.AnimalId);
-        _revealText!.text = AnimalAssignment.DisplayNameTr(_save.AnimalId);
+        DebugAnalytics.LogEvent("zodiac_selected", zodiac.ToString());
+        _revealText!.text = ZodiacDisplayName(zodiac) + "\n" + ZodiacDescription(zodiac);
         ApplyAnimalPortrait(_revealPortrait, _save.AnimalId);
         _onboardingRevealPanel.SetActive(true);
       });
@@ -392,8 +404,8 @@ namespace Kut.Unity.App
     private void RefreshHome()
     {
       var sb = new StringBuilder();
-      sb.AppendLine($"Ruh hayvanın: {AnimalAssignment.DisplayNameTr(_save.AnimalId)}");
-      sb.AppendLine($"Bonus: {AnimalBonus.DescriptionTr(_save.AnimalId)}");
+      sb.AppendLine($"Takımyıldızın: {ZodiacDisplayName(_save.SelectedZodiac)}");
+      sb.AppendLine($"Bonus: {ZodiacDescription(_save.SelectedZodiac)}");
       sb.AppendLine($"Seviye 1–{_save.HighestUnlockedLevel} / {_content.Chapters.AllLevelIds.Count} açık");
       if (_save.TotemTier > 0)
       {
@@ -632,7 +644,7 @@ namespace Kut.Unity.App
       if (body != null)
       {
         body.text =
-          $"Kalıcı ruh eşleşmen: {AnimalAssignment.DisplayNameTr(_save.AnimalId)}\n\n{AnimalBonus.DescriptionTr(_save.AnimalId)}";
+          $"Kalıcı takımyıldızın: {ZodiacDisplayName(_save.SelectedZodiac)}\n\n{ZodiacDescription(_save.SelectedZodiac)}";
         body.color = KutDesignTokens.TextPrimary;
       }
 
@@ -755,6 +767,26 @@ namespace Kut.Unity.App
       target.sprite = sprite;
       target.enabled = sprite != null;
     }
+
+    private static string ZodiacDisplayName(ZodiacType zodiac) => zodiac switch
+    {
+      ZodiacType.GokParsi => "Gök Parsı",
+      ZodiacType.AkSazan => "Ak Sazan",
+      ZodiacType.Bozkurt => "Bozkurt",
+      ZodiacType.DemirKazik => "Demir Kazık",
+      ZodiacType.OksuzBuga => "Öksüz Buğa",
+      _ => "Takımyıldızı"
+    };
+
+    private static string ZodiacDescription(ZodiacType zodiac) => zodiac switch
+    {
+      ZodiacType.GokParsi => "Ateş hasarı +%15",
+      ZodiacType.AkSazan => "Buz ve su kilitlerine +1 ilerleme",
+      ZodiacType.Bozkurt => "Gök Tanrı Kut göstergesi %10 daha hızlı dolar",
+      ZodiacType.DemirKazik => "Her seviyede +1 geçici Demirci Baltası",
+      ZodiacType.OksuzBuga => "Lav yayılması 1 hamle gecikir",
+      _ => ""
+    };
 
     private static void ApplyTotemPortrait(Image? target, int stage)
     {

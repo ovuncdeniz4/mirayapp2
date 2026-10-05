@@ -21,7 +21,10 @@ namespace Kut.Core.Commands
     Reverted,
     RejectedInvalidPosition,
     RejectedInvalidTarget,
+    RejectedInputLocked,
     RejectedSessionComplete,
-    RejectedNoMoves
+    RejectedNoMoves,
+    RejectedBoosterUnavailable,
+    RejectedContentError
   }
 }

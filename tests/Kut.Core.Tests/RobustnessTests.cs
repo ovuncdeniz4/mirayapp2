@@ -53,7 +53,7 @@ namespace Kut.Core.Tests
       File.WriteAllText(path, "{");
       File.WriteAllText(path + ".bak", "not json");
       var save = SaveStore.Load(path);
-      Assert.That(save.SchemaVersion, Is.EqualTo(4));
+        Assert.That(save.SchemaVersion, Is.EqualTo(5));
       Assert.That(save.HighestUnlockedLevel, Is.EqualTo(1));
     }
   }

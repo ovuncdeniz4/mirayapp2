@@ -16,6 +16,7 @@ namespace Kut.Unity.App
     public static GameContentBundle LoadBundle()
     {
       var chaptersText = LoadText("chapters");
+      var seasonsText = LoadText("seasons");
       var collectionText = LoadText("collection/catalog");
 
       var tempRoot = Path.Combine(Application.persistentDataPath, "kut_content_cache");
@@ -24,6 +25,7 @@ namespace Kut.Unity.App
       Directory.CreateDirectory(Path.Combine(tempRoot, "levels"));
 
       File.WriteAllText(Path.Combine(tempRoot, "chapters.json"), chaptersText);
+      File.WriteAllText(Path.Combine(tempRoot, "seasons.json"), seasonsText);
       File.WriteAllText(Path.Combine(tempRoot, "collection", "catalog.json"), collectionText);
 
       SyncLevels(tempRoot);

@@ -23,3 +23,16 @@ These assets should receive a final human art review before commercial distribut
 ## Tile prompt template
 
 Square premium Match-3 sprite with one centered elemental enamel inlay set into a softly beveled plum river-stone base, weathered-gold detail, upper-left light, crisp silhouette readable at 96 pixels, no text or cast shadow. Subjects generated separately: moss-green leaf/seed earth, blue teardrop/ripple water, ember-red flame/spark fire, and pale-cyan spiral-gust air.
+
+## Erlik rebuild — Season 1 gameplay benchmark
+
+- Asset: `season_01_gameplay_benchmark.png`
+- Tool: OpenAI built-in image generation, 2026-10-05.
+- Reference use: the two user-provided category/gameplay illustrations informed only mood and environmental storytelling. Their characters, symbols, board composition, and architecture were not copied.
+- Final prompt: original portrait painted-storybook forest clearing for an earth-and-water Match-3 season; central low-detail stone board-safe zone; calm top and bottom HUD space; deep plum, forest green, river blue, wet umber, and restrained gold; no text, UI, characters, historical runes, sacred motifs, candy gloss, casino neon, or watermark.
+
+## Constellation selection benchmark
+
+- Asset: `zodiac_selection_benchmark.png`
+- Tool: OpenAI built-in image generation, 2026-10-05.
+- Final prompt: original portrait celestial landscape with five separate abstract power regions—feline flame, flowing fish, wolf wind, iron north-star pillar, and bull-earth arc—plus quiet spaces for Unity-rendered title and buttons. No text, UI, real astrology wheel, historical rune, sacred motif, logo, or watermark.

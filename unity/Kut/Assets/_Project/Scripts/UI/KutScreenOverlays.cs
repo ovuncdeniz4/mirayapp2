@@ -14,7 +14,7 @@ namespace Kut.Unity.UI
     public void Build(Transform parent)
     {
       _root = KutUiFactory.BorderedPanel(parent, "Splash");
-      KutUiFactory.Title(_root.transform, "KUT — Beş Element", 56);
+      KutUiFactory.Title(_root.transform, "Ötüken Kut'u", 56);
       KutUiFactory.Body(_root.transform, "Loading", new Vector2(0.1f, 0.4f), new Vector2(0.9f, 0.5f)).text =
         "Yükleniyor…";
       _root.SetActive(true);

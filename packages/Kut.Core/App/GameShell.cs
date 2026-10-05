@@ -4,6 +4,8 @@ using Kut.Core.Animals;
 using Kut.Core.Levels;
 using Kut.Core.Meta;
 using Kut.Core.Save;
+using Kut.Core.Zodiac;
+using Kut.Core.Generation;
 
 namespace Kut.Core.App
 {
@@ -12,6 +14,7 @@ namespace Kut.Core.App
     public string ContentRoot { get; set; } = "";
     public ChapterCatalog Chapters { get; set; } = new ChapterCatalog();
     public CollectionCatalog Collection { get; set; } = new CollectionCatalog();
+    public SeasonCatalogDocument Seasons { get; set; } = new SeasonCatalogDocument();
 
     public LevelDefinition LoadLevelDefinition(string levelId) =>
       LevelLoader.LoadFromFile(GameContentPaths.LevelFile(ContentRoot, levelId));
@@ -22,13 +25,37 @@ namespace Kut.Core.App
       {
         ContentRoot = contentRoot,
         Chapters = ChapterCatalog.LoadFromFile(GameContentPaths.ChaptersFile(contentRoot)),
-        Collection = CollectionCatalog.LoadFromFile(GameContentPaths.CollectionCatalogFile(contentRoot))
+        Collection = CollectionCatalog.LoadFromFile(GameContentPaths.CollectionCatalogFile(contentRoot)),
+        Seasons = SeasonCatalogLoader.LoadFromFile(GameContentPaths.SeasonsFile(contentRoot))
       };
     }
   }
 
   public static class GameShell
   {
+    public static void CompleteOnboarding(SaveData save, ZodiacType zodiac)
+    {
+      if (zodiac == ZodiacType.None || !Enum.IsDefined(typeof(ZodiacType), zodiac))
+      {
+        throw new ArgumentOutOfRangeException(nameof(zodiac));
+      }
+
+      save.SelectedZodiac = zodiac;
+      save.ZodiacSelectionComplete = true;
+      save.OnboardingComplete = true;
+      save.HighestUnlockedLevel = Math.Max(1, save.HighestUnlockedLevel);
+      save.AnimalId = zodiac switch
+      {
+        ZodiacType.GokParsi => "salamander",
+        ZodiacType.AkSazan => "deer",
+        ZodiacType.Bozkurt => "wolf",
+        ZodiacType.DemirKazik => "eagle",
+        ZodiacType.OksuzBuga => "bear",
+        _ => "wolf"
+      };
+    }
+
+    [Obsolete("Use the player-selected ZodiacType onboarding flow.")]
     public static void CompleteOnboarding(SaveData save, int month, int day)
     {
       save.AnimalId = AnimalAssignment.Assign(month, day);

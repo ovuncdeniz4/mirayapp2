@@ -11,6 +11,8 @@ namespace Kut.Core.App
 
     public static string ChaptersFile(string contentRoot) => Path.Combine(contentRoot, "chapters.json");
 
+    public static string SeasonsFile(string contentRoot) => Path.Combine(contentRoot, "seasons.json");
+
     public static string CollectionCatalogFile(string contentRoot) =>
       Path.Combine(contentRoot, "collection", "catalog.json");
 
