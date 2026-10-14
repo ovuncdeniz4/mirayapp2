@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Antwerp apartments</title>
+  <link rel="stylesheet" href="/static/vendor/leaflet.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <!-- Local dashboard for the Antwerp apartment search. Not a public site. -->
+  <header class="top">
+    <div>
+      <p class="eyebrow">Province of Antwerp · for sale · localhost</p>
+      <h1>Apartments under €250,000</h1>
+      <p class="lede">Two bedrooms, at least 80 m². Loan ceiling €246,000. Move-in, renovate, or review.</p>
+    </div>
+  </header>
+  <p id="disclaimer" class="disclaimer"></p>
+  <p id="dataset-banner" class="banner" hidden></p>
+
+  <section class="lanes" aria-label="Lanes">
+    <button type="button" data-lane="move_in" data-testid="lane-move-in" class="lane is-active">Move-in <span data-count="move_in">0</span></button>
+    <button type="button" data-lane="renovate" data-testid="lane-renovate" class="lane">Renovate <span data-count="renovate">0</span></button>
+    <button type="button" data-lane="review" data-testid="lane-review" class="lane">Review <span data-count="review">0</span></button>
+    <button type="button" data-lane="shortlist" data-testid="lane-shortlist" class="lane">Shortlist <span data-count="shortlist">0</span></button>
+  </section>
+
+  <form id="filters" class="filters">
+    <label>Municipality
+      <select id="filter-municipality" data-testid="filter-municipality">
+        <option value="">All</option>
+      </select>
+    </label>
+    <label>Max price
+      <input id="filter-max-price" data-testid="filter-max-price" type="number" min="0" step="5000" placeholder="250000" />
+    </label>
+    <label>Min m²
+      <input id="filter-min-surface" data-testid="filter-min-surface" type="number" min="0" step="1" placeholder="80" />
+    </label>
+    <label>Min bedrooms
+      <select id="filter-min-bedrooms" data-testid="filter-min-bedrooms">
+        <option value="">Any</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </label>
+    <label>EPC
+      <select id="filter-epc" data-testid="filter-epc">
+        <option value="">Any</option>
+        <option>A</option>
+        <option>B</option>
+        <option>C</option>
+        <option>D</option>
+        <option>E</option>
+        <option>F</option>
+        <option>G</option>
+      </select>
+    </label>
+    <label class="check">
+      <input id="filter-fits" data-testid="filter-fits" type="checkbox" />
+      Price + renovation + costs within €246,000
+    </label>
+  </form>
+
+  <div class="workspace">
+    <section>
+      <p id="empty" class="empty" hidden>Nothing in this lane for the current filters.</p>
+      <div id="cards" class="cards"></div>
+    </section>
+    <aside id="map-wrap" class="map-wrap">
+      <h2>Map</h2>
+      <div id="map" data-testid="map"></div>
+      <p class="map-note">OpenStreetMap. Tiles need a network connection; the list does not.</p>
+    </aside>
+  </div>
+
+  <details class="run-log">
+    <summary>Last ingest</summary>
+    <div id="run-log"></div>
+  </details>
+
+  <script src="/static/vendor/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
