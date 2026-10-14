@@ -1,0 +1,2 @@
+Leaflet 1.9.4 (BSD-2-Clause), copied from the unpkg distribution of leaflet.js and leaflet.css.
+Vendored so the dashboard shell loads without a CDN. Map tiles still come from OpenStreetMap.
